@@ -1,0 +1,137 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Validator;
+use App\User;
+
+class UserController extends Controller
+{
+
+    // Class Constructor
+    // Methods in 'except' are not authenticated by the middleware?
+    public function __construct() {
+        $this->middleware('auth:api', [
+            'except' => ['login', 'register']
+        ]);
+    }
+
+    // REGISTER
+    public function register(Request $request) {
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
+            'phone' => 'required|unique:users|regex:/^[0-9]{10}$/',
+            'address' => 'required|max:255',
+            'password' => 'required|string|confirmed|min:6'
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'code' => 400,
+                'status' => false,
+                'message' => count($validator->errors()) > 4 ? 'Bad Request' : $validator->errors()
+            ], 400);
+        } else {
+            $input = array_merge($validator->validated(), ['password' => bcrypt($request['password'])]);
+            $user = User::create($input);
+            $userData = [
+                'id' => $user['id'],
+                'name' => $user['name'],
+                'email' => $user['email'],
+                'phone' => $input['phone'],
+                'address' => $input['address']
+            ];
+            return response()->json([
+                'code' => 200,
+                'data' => $userData,
+                'message' => 'User Registered'
+            ]);
+        }
+
+    }
+
+    // LOGIN
+    public function login(Request $request) {
+
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required|string|min:6'
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'code' => 400,
+                'status' => false,
+                'message' => $validator->errors()
+            ]);
+        } else {
+            // If security problems, use: attempt(['email' => request('email'), 'password' => request('password')])
+            if(!$token = auth()->attempt($validator->validated())) {
+                return response()->json([
+                    'code' => 401,
+                    'status' => false,
+                    'message' => 'Invalid Credentials. User Unauthorized.'
+                ]);
+            } else {
+                $user = auth()->user();
+                $data = $user;
+                $data['session_token'] = $token;
+                return response()->json([
+                    'code' => 200,
+                    'data' => $user,
+                    'message' => "User logged in successfully"
+                ]);
+            }
+        }
+
+    }
+
+    // LOGOUT
+    public function logout() {
+        auth()->logout();
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'message' => 'User logged out successfully'
+        ]);
+    }
+
+    protected function createNewToken($token) {
+        return array(
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL() * 60
+        );
+    }
+
+    // Refresh Token
+    public function refresh() {
+        $user = auth()->user();
+        return response()->json([
+            'code' => 200,
+            'message' => 'Token Refreshed',
+            'user' => $user,
+            'session' => $this->createNewToken($token)
+        ]);
+    }
+
+    // Get User Details
+    public function profile() {
+        return response()->json(auth()->user());
+    }
+
+    // REGISTRATIONS CLOSED
+    public function registrationsClosed(Request $request) {
+
+        return response()->json([
+            'code' => 200,
+            'message' => 'Registrations are Closed'
+        ]);
+
+    }
+
+}
