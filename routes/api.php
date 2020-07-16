@@ -27,6 +27,13 @@ Route::group(['middleware' => 'api', 'prefix' => 'user'], function ($router) {
     Route::get('profile', 'UserController@profile');
 });
 
+Route::group(['middleware' => 'api'], function ($router) {
+    Route::apiResource('items', 'ItemController');
+    Route::apiResource('items/{item}/serials', 'ItemSerialBarcodeController')->except([
+        'store', 'show'
+    ]);
+});
+
 // Route::fallback(function() {
 //     return response()->json([
 //         'code' => 404,
