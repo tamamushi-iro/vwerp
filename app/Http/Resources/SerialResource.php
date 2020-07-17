@@ -15,5 +15,13 @@ class SerialResource extends JsonResource
     public function toArray($request)
     {
         return parent::toArray($request);
+        // return [
+        //     'id' => $this->id(),
+        //     'serial_number' => $this->serial_number(),
+        //     'item_id' => $this->item_id(),
+        //     'item_name' => $this->$item->name(),
+        // ];
     }
 }
+
+// THIS FILE IS CURRENTY USELESS

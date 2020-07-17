@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use DNS2D;
 use App\Item;
 use App\ItemSerialBarcode;
 use App\Http\Resources\ItemResource;
@@ -52,8 +53,9 @@ class ItemController extends Controller
         } else {
             $item = Item::create($validator->validated());
             foreach($request['serial_number'] as $serial) {
-                // To-Do: Barcode generate here?
-                $itemSerial = ItemSerialBarcode::create(['item_id' => $item['id'], 'serial_number' => $serial]);
+                // qrcode generate here.
+                $qrPath = DNS2D::getBarcodePNGPath($serial, 'QRCODE');
+                $itemSerial = ItemSerialBarcode::create(['item_id' => $item['id'], 'serial_number' => $serial, 'qrcode_path' => $qrPath]);
             }
             return response()->json([
                 'code' => 200,

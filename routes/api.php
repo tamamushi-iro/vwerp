@@ -32,6 +32,9 @@ Route::group(['middleware' => 'api'], function ($router) {
     Route::apiResource('items/{item}/serials', 'ItemSerialBarcodeController')->except([
         'store', 'show'
     ]);
+    Route::apiResource('serials', 'ItemSerialBarcodeController')->only([
+        'show'
+    ]);
 });
 
 // Route::fallback(function() {

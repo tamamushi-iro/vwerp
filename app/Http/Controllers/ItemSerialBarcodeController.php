@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Item;
 use App\ItemSerialBarcode;
-use App\Http\Resources\SerialResource;
+// use App\Http\Resources\SerialResource;
 use Illuminate\Http\Request;
 
 class ItemSerialBarcodeController extends Controller
@@ -40,10 +40,19 @@ class ItemSerialBarcodeController extends Controller
      * @param  \App\ItemSerialBarcode  $itemSerialBarcode
      * @return \Illuminate\Http\Response
      */
-    // public function show(ItemSerialBarcode $itemSerialBarcode)
-    // {
-    //     return $itemSerialBarcode;
-    // }
+    public function show($serialNumber)
+    {
+        $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
+        // $itemSerialBarcode['item_name'] = $itemSerialBarcode->item->name;
+        return response()->json([
+            'id' => $itemSerialBarcode->id,
+            'serial_number' => $itemSerialBarcode->serial_number,
+            'item_id' => $itemSerialBarcode->item_id,
+            'item_name' => $itemSerialBarcode->item->name,
+            'qrcod_path' => $itemSerialBarcode->qrcode_path
+        ]);
+        // return $itemSerialBarcode;
+    }
 
     /**
      * Update the specified resource in storage.
