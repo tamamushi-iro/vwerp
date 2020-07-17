@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 
@@ -55,7 +56,7 @@ class Handler extends ExceptionHandler
             return response()->json([
                 'code' => 404,
                 'status' => false,
-                'message' => 'Entry for ' . str_replace('App\\', '', $exception->getModel()) . 'not found. (Handler.php func.render ModelNotFoundException'
+                'message' => 'Entry for ' . str_replace('App\\', '', $exception->getModel()) . ' not found'
             ], 404);
         }
         if($exception instanceof MethodNotAllowedHttpException) {
@@ -65,7 +66,7 @@ class Handler extends ExceptionHandler
                 'message' => $exception->getMessage()
             ], 405);
         }
-        
+
         // Other Http Exceptions
         if($this->isHttpException($exception)) {
             $error = $this->convertExceptionToResponse($exception);
@@ -76,8 +77,15 @@ class Handler extends ExceptionHandler
             ], $exception->getStatusCode());
         }
 
-        // If all above fails then:
-        return parent::render($request, $exception);
+        // If all above fails then use any one of the following:
+        // return parent::render($request, $exception);
+        if($exception) {
+            return response()->json([
+                'code' => 500,
+                'status' => false,
+                'message' => $exception->getMessage() 
+            ], 500);
+        }
     }
 
 }
