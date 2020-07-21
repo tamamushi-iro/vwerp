@@ -37,6 +37,10 @@ Route::group(['middleware' => 'api'], function ($router) {
     ]);
 });
 
+Route::group(['middleware' => 'api'], function ($router) {
+    Route::apiResource('events', 'EventController');
+});
+
 // Route::fallback(function() {
 //     return response()->json([
 //         'code' => 404,

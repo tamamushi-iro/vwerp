@@ -33,6 +33,7 @@ class ItemController extends Controller
      */
     public function store(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:items',
             'quantity' => 'required|integer',
@@ -54,7 +55,9 @@ class ItemController extends Controller
             $item = Item::create($validator->validated());
             foreach($request['serial_number'] as $serial) {
                 // qrcode generate here.
-                $qrPath = DNS2D::getBarcodePNGPath($serial, 'QRCODE');
+                $qrPath = DNS2D::getBarcodePNGPath(json_encode(
+                    ['item_id' => $item['id'], 'serial_number' => $serial]
+                ), 'QRCODE');
                 $itemSerial = ItemSerialBarcode::create(['item_id' => $item['id'], 'serial_number' => $serial, 'qrcode_path' => $qrPath]);
             }
             return response()->json([
@@ -84,9 +87,27 @@ class ItemController extends Controller
      * @param  \App\Item  $item
      * @return \Illuminate\Http\Response
      */
+    // SERIAL VADU UPDATE BAKI?
     public function update(Request $request, Item $item)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'code' => 400,
+                'status' => false,
+                'message' => $validator->errors()
+            ], 400);
+        } else {
+            $item->update($request->all());
+            return response()->json([
+                'code' => 200,
+                'status' => true,
+                'message' => 'Item Updated successfully'
+            ]);
+        }
     }
 
     /**
@@ -97,6 +118,11 @@ class ItemController extends Controller
      */
     public function destroy(Item $item)
     {
-        //
+        $product->delete();
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'message' => 'Item Deleted successfully'
+        ]);
     }
 }
