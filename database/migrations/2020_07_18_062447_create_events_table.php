@@ -29,7 +29,7 @@ class CreateEventsTable extends Migration
             $table->string('vehicle_number');
             $table->string('driver_name');
             $table->string('driver_phone');
-            $table->string('invoice_number');
+            $table->string('invoice_number')->nullable();
             $table->timestamps();
         });
     }

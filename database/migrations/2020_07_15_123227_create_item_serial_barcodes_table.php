@@ -15,7 +15,7 @@ class CreateItemSerialBarcodesTable extends Migration
     {
         Schema::create('item_serial_barcodes', function (Blueprint $table) {
             $table->id();
-            $table->foreignID('item_id')->constrained();
+            $table->foreignID('item_id')->constrained()->onDelete('cascade');
             $table->string('serial_number')->unique();
             $table->integer('quantity')->default(1);
             $table->string('qrcode_path');
