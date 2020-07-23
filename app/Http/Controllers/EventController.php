@@ -20,7 +20,12 @@ class EventController extends Controller
      */
     public function index()
     {
-        return Event::all();
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'data' => Event::all()
+        ]);
+        // return Event::all();
     }
 
     /**
@@ -29,8 +34,7 @@ class EventController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'start_date' => 'required|date',
@@ -40,12 +44,13 @@ class EventController extends Controller
             'client_name' => 'required',
             'client_phone' => 'required|regex:/^[0-9]{10}$/',
             'client_company' => 'required',
-            'techician_name' => 'required',
-            'techician_details' => 'required',
+            'technician_name' => 'required',
+            'technician_details' => 'required',
             'vehicle_number' => 'required',
             'driver_name' => 'required',
             'driver_phone' => 'required|regex:/^[0-9]{10}$/',
-            'invoice_number' => 'required|unique:events'
+            'invoice_number' => 'string'
+            // 'invoice_number' => 'required|unique:events'
         ]);
 
         if($validator->fails()) {
@@ -72,7 +77,12 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        return $event;
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'data' => $event
+        ]);
+        // return $event;
     }
 
     /**
@@ -82,9 +92,13 @@ class EventController extends Controller
      * @param  \App\Event  $event
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Event $event)
-    {
-        //
+    public function update(Request $request, Event $event) {
+        $event->update($request->all());
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'message' => 'Event Updated successfully'
+        ]);
     }
 
     /**
@@ -95,6 +109,11 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
-        //
+        $event->delete();
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'message' => 'Event Deleted successfully'
+        ]);
     }
 }

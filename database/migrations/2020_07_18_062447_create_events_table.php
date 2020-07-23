@@ -24,8 +24,8 @@ class CreateEventsTable extends Migration
             $table->string('client_name');
             $table->string('client_phone');
             $table->string('client_company');
-            $table->string('techician_name');
-            $table->string('techician_details');
+            $table->string('technician_name');
+            $table->string('technician_details');
             $table->string('vehicle_number');
             $table->string('driver_name');
             $table->string('driver_phone');

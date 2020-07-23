@@ -38,7 +38,8 @@ Route::group(['middleware' => 'api'], function ($router) {
 });
 
 Route::group(['middleware' => 'api'], function ($router) {
-    Route::apiResource('events', 'EventController');
+    Route::apiResource('events', 'EventController')->except(['update']);
+    Route::post('/events/update/{event}', 'EventController@update');
 });
 
 // Route::fallback(function() {
