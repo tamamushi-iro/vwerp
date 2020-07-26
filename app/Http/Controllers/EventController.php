@@ -49,7 +49,8 @@ class EventController extends Controller
             'vehicle_number' => 'required',
             'driver_name' => 'required',
             'driver_phone' => 'required|regex:/^[0-9]{10}$/',
-            'invoice_number' => 'string'
+            'invoice_number' => 'string',
+            'priority' => 'string'
             // 'invoice_number' => 'required|unique:events'
         ]);
 
