@@ -30,7 +30,7 @@ class CreateEventsTable extends Migration
             $table->string('driver_name');
             $table->string('driver_phone');
             $table->string('invoice_number')->nullable();
-            $table->string('priority')->default('#ffffff');
+            $table->string('priority')->default('04a9f5');
             $table->timestamps();
         });
     }

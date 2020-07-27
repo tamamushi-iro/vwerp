@@ -7,6 +7,7 @@ use App\Item;
 use App\ItemSerialBarcode;
 use App\Http\Resources\ItemResource;
 use Validator;
+use Throwable;
 use Illuminate\Http\Request;
 
 class ItemController extends Controller
@@ -22,7 +23,12 @@ class ItemController extends Controller
      */
     public function index()
     {
-        return ItemResource::collection(Item::all());
+        $itemResource = ItemResource::collection(Item::all());
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'data' => $itemResource
+        ]);
     }
 
     /**
@@ -58,7 +64,17 @@ class ItemController extends Controller
                 $qrPath = DNS2D::getBarcodePNGPath(json_encode(
                     ['item_id' => $item['id'], 'serial_number' => $serial]
                 ), 'QRCODE');
-                $itemSerial = ItemSerialBarcode::create(['item_id' => $item['id'], 'serial_number' => $serial, 'qrcode_path' => $qrPath]);
+                try {
+                    // Throws "Illuminate\Database\QueryException" when encountring non-unique Serial Number ('exceptionClass' => get_class($exception))
+                    $itemSerial = ItemSerialBarcode::create(['item_id' => $item['id'], 'serial_number' => $serial, 'qrcode_path' => $qrPath]);
+                } catch(Throwable $exception) {
+                    $item->delete();
+                    return response()->json([
+                        'code' => 400,
+                        'status' => false,
+                        'message' => ($exception->getCode() == "23000") ? "Serial number already exists" : $exception->getMessage()
+                    ]);
+                }
             }
             return response()->json([
                 'code' => 200,
@@ -77,7 +93,12 @@ class ItemController extends Controller
      */
     public function show(Item $item)
     {
-        return new ItemResource($item);
+        $itemResource = new ItemResource($item);
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'data' => $itemResource
+        ]);
     }
 
     /**
