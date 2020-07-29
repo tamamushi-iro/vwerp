@@ -46,9 +46,11 @@ class ItemController extends Controller
             'class' => 'required',
             'category' => 'required',
             'type' => 'required',
-            'serial_number' => 'required'
+            'serial_number' => 'required|array',
+            'serial_number.*' => 'required|distinct|string|unique:item_serial_barcodes,serial_number'
         ], [
-            'name.unique' => "Item already exists"
+            'name.unique' => 'Item already exists',
+            'serial_number.*.unique' => 'Serial number already exists'
         ]);
 
         if($validator->fails()) {
@@ -60,21 +62,11 @@ class ItemController extends Controller
         } else {
             $item = Item::create($validator->validated());
             foreach($request['serial_number'] as $serial) {
-                // qrcode generate here.
+                // qrcode is generated here.
                 $qrPath = DNS2D::getBarcodePNGPath(json_encode(
                     ['item_id' => $item['id'], 'serial_number' => $serial]
                 ), 'QRCODE');
-                try {
-                    // Throws "Illuminate\Database\QueryException" when encountring non-unique Serial Number ('exceptionClass' => get_class($exception))
-                    $itemSerial = ItemSerialBarcode::create(['item_id' => $item['id'], 'serial_number' => $serial, 'qrcode_path' => $qrPath]);
-                } catch(Throwable $exception) {
-                    $item->delete();
-                    return response()->json([
-                        'code' => 400,
-                        'status' => false,
-                        'message' => ($exception->getCode() == "23000") ? "Serial number already exists" : $exception->getMessage()
-                    ]);
-                }
+                $itemSerial = ItemSerialBarcode::create(['item_id' => $item['id'], 'serial_number' => $serial, 'qrcode_path' => $qrPath]);
             }
             return response()->json([
                 'code' => 200,
