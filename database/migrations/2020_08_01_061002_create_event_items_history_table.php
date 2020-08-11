@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateItemSerialBarcodesTable extends Migration
+class CreateEventItemsHistoryTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,10 @@ class CreateItemSerialBarcodesTable extends Migration
      */
     public function up()
     {
-        Schema::create('item_serial_barcodes', function (Blueprint $table) {
+        Schema::create('event_items_history', function (Blueprint $table) {
             $table->id();
-            $table->foreignID('item_id')->constrained()->onDelete('cascade');
-            $table->string('serial_number')->unique();
-            $table->string('qrcode_path');
-            $table->boolean('is_available')->default(true);
+            $table->foreignID('event_id');
+            $table->foreignID('item_serial_barcode_id');
             $table->timestamps();
         });
     }
@@ -30,6 +28,6 @@ class CreateItemSerialBarcodesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('item_serial_barcodes');
+        Schema::dropIfExists('event_items_history');
     }
 }

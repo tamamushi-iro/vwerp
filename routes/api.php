@@ -29,17 +29,15 @@ Route::group(['middleware' => 'api', 'prefix' => 'user'], function ($router) {
 
 Route::group(['middleware' => 'api'], function ($router) {
     Route::apiResource('items', 'ItemController');
-    Route::apiResource('items/{item}/serials', 'ItemSerialBarcodeController')->except([
-        'store', 'show'
-    ]);
-    Route::apiResource('serials', 'ItemSerialBarcodeController')->only([
-        'show'
-    ]);
+    Route::apiResource('items/{item}/serials', 'ItemSerialBarcodeController')->except(['show']);
+    Route::apiResource('serials', 'ItemSerialBarcodeController')->only(['show']);
 });
 
 Route::group(['middleware' => 'api'], function ($router) {
     Route::apiResource('events', 'EventController')->except(['update']);
     Route::post('/events/update/{event}', 'EventController@update');
+    Route::apiResource('events/{event}/items', 'EventItemController')->except(['store', 'show', 'update']);
+    Route::post('/events/update/{event}/items', 'EventItemController@update');
 });
 
 // Route::fallback(function() {

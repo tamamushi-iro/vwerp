@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\EventItem;
 use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
@@ -11,7 +12,8 @@ class Event extends Model
         'name', 'start_date', 'end_date', 'reporting_date', 'location',
         'client_name', 'client_phone', 'client_company',
         'technician_name', 'technician_details', 'vehicle_number', 'driver_name', 'driver_phone',
-        'invoice_number', 'priority'
+        'invoice_number',
+        'priority', 'has_ended'
     ];
 
     protected $hidden = [
@@ -28,4 +30,9 @@ class Event extends Model
     //     'end_date' => 'datetime',
     //     'reporting_date' => 'datetime'
     // ];
+
+    public function event_items() {
+        return $this->hasMany(EventItem::class);
+    }
+
 }

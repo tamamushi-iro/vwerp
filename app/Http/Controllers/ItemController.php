@@ -39,10 +39,9 @@ class ItemController extends Controller
      */
     public function store(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:items',
-            'quantity' => 'required|integer',
+            'total_quantity' => 'required|integer',
             'class' => 'required',
             'category' => 'required',
             'type' => 'required',
@@ -60,7 +59,7 @@ class ItemController extends Controller
                 'message' => $validator->errors()
             ], 400);
         } else {
-            $item = Item::create($validator->validated());
+            $item = Item::create(array_merge($validator->validated(), ['available_quantity' => $request['total_quantity']]));
             foreach($request['serial_number'] as $serial) {
                 // qrcode is generated here.
                 $qrPath = DNS2D::getBarcodePNGPath(json_encode(

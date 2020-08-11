@@ -29,10 +29,25 @@ class ItemSerialBarcodeController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    // public function store(Request $request)
-    // {
-    //     //
-    // }
+    public function store(Request $request, Item $item)
+    {
+        // This function acting like update for items
+        $validator = Vadidator::make($request->all(), [
+            'serial_number' => 'required|array',
+            'serial_number' => 'required|distinct|string|unique:item_serial_barcodes,serial_number'
+        ], [
+            'serial_number.*.unique' => 'Serial number already exists'
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'code' => 400,
+                'status' => false,
+                'message' => $validator->errors()
+            ], 400);
+        }
+
+    }
 
     /**
      * Display the specified resource.
@@ -43,15 +58,17 @@ class ItemSerialBarcodeController extends Controller
     public function show($serialNumber)
     {
         $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
-        // $itemSerialBarcode['item_name'] = $itemSerialBarcode->item->name;
         return response()->json([
-            'id' => $itemSerialBarcode->id,
-            'serial_number' => $itemSerialBarcode->serial_number,
-            'item_id' => $itemSerialBarcode->item_id,
-            'item_name' => $itemSerialBarcode->item->name,
-            'qrcod_path' => $itemSerialBarcode->qrcode_path
+            'code' => 200,
+            'status' => true,
+            'data' => [
+                'id' => $itemSerialBarcode->id,
+                'serial_number' => $itemSerialBarcode->serial_number,
+                'item_id' => $itemSerialBarcode->item_id,
+                'item_name' => $itemSerialBarcode->item->name,
+                'qrcode_path' => $itemSerialBarcode->qrcode_path
+            ]
         ]);
-        // return $itemSerialBarcode;
     }
 
     /**
