@@ -15,7 +15,15 @@ class ItemResource extends JsonResource
     public function toArray($request)
     {
         $array = parent::toArray($request);
-        $array['serials'] = $this->item_serial_barcodes;
+        if(isset($request['show']) and $request['show'] == 'available') {
+            foreach($this->item_serial_barcodes as $itemSerialBarcode) {
+                if($itemSerialBarcode->is_available) {
+                    $array['serials'][] = $itemSerialBarcode;
+                }
+            }
+        } else {
+            $array['serials'] = $this->item_serial_barcodes;
+        }
         return $array;
     }
 }

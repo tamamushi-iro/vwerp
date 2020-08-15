@@ -8,7 +8,9 @@ use App\EventItem;
 use App\Http\Resources\EventResource;
 use App\ItemSerialBarcode;
 use Validator;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EventController extends Controller
 {
@@ -22,9 +24,13 @@ class EventController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $eventResource = EventResource::collection(Event::all());
+        if(isset($request['show']) and $request['show'] == 'all') {
+            $eventResource = EventResource::collection(Event::all());
+        } else {
+            $eventResource = EventResource::collection(Event::where('has_ended', false)->get());
+        }
         return response()->json([
             'code' => 200,
             'status' => true,
@@ -95,14 +101,14 @@ class EventController extends Controller
                 return array(
                     'code' => 400,
                     'status' => false,
-                    'message' => 'Serial number:'. $serial .' is already assigned to an event'
+                    'message' => 'Serial number: '. $serial .' is already assigned to an event'
                 );
             } else {
-                $item = Item::find($itemSerialBarcode->item_id);
+                // SHOULD BE IN A DB TRANSACTION
                 // Update available_quantity in items and set is_available to false in itemserialbarcode
-                $itemSerialBarcode->is_available = false;
-                $itemSerialBarcode->save();
+                $itemSerialBarcode->update(['is_available' => false]);
                 // REDUNDENT CONDITION? check back after flow diagram is complete, should never execute?
+                $item = Item::find($itemSerialBarcode->item_id);
                 if($item->available_quantity > 0) {
                     $item->available_quantity--;
                     $item->save();
@@ -116,6 +122,7 @@ class EventController extends Controller
                 $eventItem = EventItem::create(['event_id' => $event_id, 'item_serial_barcode_id' => $itemSerialBarcode->id]);
             }
         }
+        // only status is used from below array, everything else does not matter, atleast right now.
         return array(
             'code' => 200,
             'status' => true,
@@ -160,11 +167,11 @@ class EventController extends Controller
                 'message' => $validator->errors()
             ], 400);
         } else {
-            $event->update($request->all());
             if(isset($request['serial_number'])) {
                 $data = $this->addEventItems($request, $event['id']);
                 if(!$data['status']) return response()->json($data);
             }
+            $event->update($request->all());
         }
         return response()->json([
             'code' => 200,
@@ -179,12 +186,26 @@ class EventController extends Controller
      * @param  \App\Event  $event
      * @return \Illuminate\Http\Response
      */
+    // DOESN'T ACTUALLY DELETE
     public function destroy(Event $event) {
-        $event->delete();
+        $eventItems = EventItem::where('event_id', $event['id'])->get();
+        foreach($eventItems as $eventItem) {
+            $itemSerialBarcode = ItemSerialBarcode::find($eventItem['item_serial_barcode_id']);
+            $itemSerialBarcode->update(['is_available' => true]);
+            $item = Item::find($itemSerialBarcode->item_id);
+            if($item->available_quantity < $item->total_quantity) {
+                $item->available_quantity++;
+                $item->save();
+            }
+            DB::table('event_items_history')->insert(['event_id' => $eventItem->event_id, 'item_serial_barcode_id' => $eventItem->item_serial_barcode_id, 'created_at' => Carbon::now()]);
+            $eventItem->delete();
+        }
+        // $event->delete();
+        $event->update(['has_ended' => true]);
         return response()->json([
             'code' => 200,
             'status' => true,
-            'message' => 'Event Deleted successfully'
+            'message' => 'Event Deleted successfully',
         ]);
     }
 }
