@@ -22,6 +22,7 @@ class EventItemController extends Controller
      */
     public function index(Event $event)
     {
+        // Unused in front end. Comment added for fake commit?
         $array['items'] = array();
         foreach($event->event_items as $event_item) {
             $temp = [
