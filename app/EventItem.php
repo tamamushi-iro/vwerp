@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class EventItem extends Model
 {
     protected $fillable = [
-        'event_id', 'item_serial_barcode_id'
+        'event_id', 'item_serial_barcode_id', 'assigned_quantity'
     ];
 
     protected $hidden = [

@@ -31,10 +31,11 @@ class ItemSerialBarcodeController extends Controller
      */
     public function store(Request $request, Item $item)
     {
+        // Currently UNUSED?
         // This function acting like update for items
         $validator = Vadidator::make($request->all(), [
             'serial_number' => 'required|array',
-            'serial_number' => 'required|distinct|string|unique:item_serial_barcodes,serial_number'
+            'serial_number.*' => 'required|distinct|string|unique:item_serial_barcodes,serial_number'
         ], [
             'serial_number.*.unique' => 'Serial number already exists'
         ]);

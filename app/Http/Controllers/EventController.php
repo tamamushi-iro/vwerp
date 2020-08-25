@@ -24,8 +24,7 @@ class EventController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         if(isset($request['show']) and $request['show'] == 'all') {
             $eventResource = EventResource::collection(Event::all());
         } else {
@@ -62,11 +61,20 @@ class EventController extends Controller
             'invoice_number' => 'string',
             'priority' => 'string',
             'serial_number' => 'array',
-            'serial_number.*' => 'distinct|string|exists:item_serial_barcodes,serial_number'
+            'serial_number.*' => 'distinct|string|exists:item_serial_barcodes,serial_number',
+            'serial_quantity' => 'array',
+            'serial_quantity.*' => 'integer'
             // 'invoice_number' => 'required|unique:events'
         ], [
             'serial_number.*.exists' => 'Serial number does not exist'
         ]);
+        if(count($request['serial_number']) != count($request['serial_quantity'])) {
+            return response()->json([
+                'code' => 400,
+                'status' => false,
+                'message' => 'serial_number array and serial_quantity array do not match in size'
+            ]);
+        }
 
         if($validator->fails()) {
             return response()->json([
@@ -92,44 +100,6 @@ class EventController extends Controller
         }
     }
 
-    // Function for store and update functions
-    protected function addEventItems(Request $request, $event_id) {
-        foreach($request['serial_number'] as $serial) {
-            $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serial)->first();
-            // Following condition should not occur if front-end never has non-available serials
-            if(!$itemSerialBarcode->is_available) {
-                return array(
-                    'code' => 400,
-                    'status' => false,
-                    'message' => 'Serial number: '. $serial .' is already assigned to an event'
-                );
-            } else {
-                // SHOULD BE IN A DB TRANSACTION
-                // Update available_quantity in items and set is_available to false in itemserialbarcode
-                $itemSerialBarcode->update(['is_available' => false]);
-                // REDUNDENT CONDITION? check back after flow diagram is complete, should never execute?
-                $item = Item::find($itemSerialBarcode->item_id);
-                if($item->available_quantity > 0) {
-                    $item->available_quantity--;
-                    $item->save();
-                } else {
-                    return array(
-                        'code' => 400,
-                        'status' => false,
-                        'message' => 'Item: ' . $item->name . ' Serial: ' . $itemSerialBarcode->serial_number . ' not available in sufficient quantity. Available: (' . $item->available_quantity . ')'
-                    );
-                }
-                $eventItem = EventItem::create(['event_id' => $event_id, 'item_serial_barcode_id' => $itemSerialBarcode->id]);
-            }
-        }
-        // only status is used from below array, everything else does not matter, atleast right now.
-        return array(
-            'code' => 200,
-            'status' => true,
-            'message' => 'Event Created/Updated successfully'
-        );
-    }
-
     /**
      * Display the specified resource.
      *
@@ -153,12 +123,28 @@ class EventController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Event $event) {
+        if($event->has_ended) {
+            return response()->json([
+                'code' => 400,
+                'status' => false,
+                'message' => 'Event has already ended'
+            ]);
+        }
         $validator = Validator::make($request->all(), [
             'serial_number' => 'array',
-            'serial_number.*' => 'distinct|string|exists:item_serial_barcodes,serial_number'
+            'serial_number.*' => 'distinct|string|exists:item_serial_barcodes,serial_number',
+            'serial_quantity' => 'array',
+            'serial_quantity.*' => 'integer'
         ], [
             'serial_number.*.exists' => 'Serial number does not exist'
         ]);
+        if(count($request['serial_number']) != count($request['serial_quantity'])) {
+            return response()-json([
+                'code' => 400,
+                'status' => false,
+                'message' => 'serial_number array and serial_quantity array do not match in size'
+            ]);
+        }
 
         if($validator->fails()) {
             return response()->json([
@@ -188,16 +174,32 @@ class EventController extends Controller
      */
     // DOESN'T ACTUALLY DELETE
     public function destroy(Event $event) {
+        if($event->has_ended) {
+            return response()->json([
+                'code' => 400,
+                'status' => false,
+                'message' => 'Event has already ended'
+            ]);
+        }
         $eventItems = EventItem::where('event_id', $event['id'])->get();
         foreach($eventItems as $eventItem) {
             $itemSerialBarcode = ItemSerialBarcode::find($eventItem['item_serial_barcode_id']);
-            $itemSerialBarcode->update(['is_available' => true]);
             $item = Item::find($itemSerialBarcode->item_id);
-            if($item->available_quantity < $item->total_quantity) {
-                $item->available_quantity++;
-                $item->save();
+            if($item->available_quantity < $item->total_quantity and $itemSerialBarcode->available_quantity < $itemSerialBarcode->total_quantity) {
+                $itemSerialBarcode->update([
+                    'available_quantity' => $itemSerialBarcode->available_quantity + $eventItem->assigned_quantity,
+                    'is_available' => true
+                ]);
+                $item->update([
+                    'available_quantity' => $item->available_quantity + $eventItem->assigned_quantity
+                ]);
             }
-            DB::table('event_items_history')->insert(['event_id' => $eventItem->event_id, 'item_serial_barcode_id' => $eventItem->item_serial_barcode_id, 'created_at' => Carbon::now()]);
+            DB::table('event_items_history')->insert([
+                'event_id' => $eventItem->event_id,
+                'item_serial_barcode_id' => $eventItem->item_serial_barcode_id,
+                'assigned_quantity' => $eventItem->assigned_quantity,
+                'created_at' => Carbon::now()
+            ]);
             $eventItem->delete();
         }
         // $event->delete();
@@ -208,4 +210,56 @@ class EventController extends Controller
             'message' => 'Event Deleted successfully',
         ]);
     }
+
+
+    // HELPER FUNCTIONS:
+
+    // Function for store and update functions
+    protected function addEventItems(Request $request, $event_id) {
+        foreach(array_combine($request['serial_number'], $request['serial_quantity']) as $serial => $quantity) {
+            $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serial)->first();
+            // Following condition should not occur if front-end never has non-available serials
+            if(!$itemSerialBarcode->is_available) {
+                return array(
+                    'code' => 400,
+                    'status' => false,
+                    'message' => "Serial number: $serial is already assigned to an event"
+                );
+            } else {
+                // SHOULD BE IN A DB TRANSACTION (later)
+                // Update available_quantity in items and itemserialbarcodes and set is_available to false in itemserialbarcode
+                // REDUNDENT CONDITION? check back after flow diagram is complete, should never execute?
+                $item = Item::find($itemSerialBarcode->item_id);
+                $newItemQuant = $item->available_quantity - $quantity;
+                $newItemSerialQuant = $itemSerialBarcode->available_quantity - $quantity;
+                if($newItemQuant >= 0 and $newItemSerialQuant >= 0) {
+                    $itemSerialBarcode->update([
+                        'available_quantity' => $newItemSerialQuant,
+                        'is_available' => ($newItemSerialQuant < 1) ? false : true
+                    ]);
+                    $item->update([
+                        'available_quantity' => $newItemQuant
+                    ]);
+                } else {
+                    return array(
+                        'code' => 400,
+                        'status' => false,
+                        'message' => "Item: $item->name Serial: $itemSerialBarcode->serial_number not available in sufficient quantity. Available: ($item->available_quantity, $itemSerialBarcode->available_quantity)"
+                    );
+                }
+                $eventItem = EventItem::create([
+                    'event_id' => $event_id,
+                    'item_serial_barcode_id' => $itemSerialBarcode->id,
+                    'assigned_quantity' => $quantity
+                ]);
+            }
+        }
+        // only status is used from below array, everything else does not matter, atleast right now.
+        return array(
+            'code' => 200,
+            'status' => true,
+            'message' => 'Event Created/Updated successfully'
+        );
+    }
+
 }

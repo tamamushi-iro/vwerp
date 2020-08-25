@@ -17,6 +17,7 @@ class CreateEventItemsHistoryTable extends Migration
             $table->id();
             $table->foreignID('event_id');
             $table->foreignID('item_serial_barcode_id');
+            $table->integer('assigned_quantity')->default(1);
             $table->timestamps();
         });
     }

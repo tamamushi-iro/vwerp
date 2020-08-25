@@ -17,6 +17,7 @@ class CreateEventItemsTable extends Migration
             $table->id();
             $table->foreignID('event_id')->constrained()->onDelete('cascade');
             $table->foreignID('item_serial_barcode_id')->constrained();
+            $table->integer('assigned_quantity')->default(1);
             $table->timestamps();
         });
     }

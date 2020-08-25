@@ -23,6 +23,7 @@ class EventResource extends JsonResource
                 'item_id' => $event_item->item_serial_barcode->item_id,
                 'item_name' => $event_item->item_serial_barcode->item->name,
                 'serial_number' => $event_item->item_serial_barcode->serial_number,
+                'assigned_quantity' => $event_item->assigned_quantity
             ];
             array_push($array['items'], $temp);
         }
