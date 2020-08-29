@@ -39,6 +39,10 @@ Route::group(['middleware' => 'api'], function ($router) {
     Route::apiResource('events/{event}/items', 'EventItemController')->only(['index']);
 });
 
+Route::group(['middleware' => 'api'], function () {
+    Route::apiResource('tags', 'TagController')->except(['update']);
+});
+
 // Route::fallback(function() {
 //     return response()->json([
 //         'code' => 404,

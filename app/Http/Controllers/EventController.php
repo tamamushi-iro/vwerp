@@ -68,13 +68,13 @@ class EventController extends Controller
         ], [
             'serial_number.*.exists' => 'Serial number does not exist'
         ]);
-        if(count($request['serial_number']) != count($request['serial_quantity'])) {
-            return response()->json([
-                'code' => 400,
-                'status' => false,
-                'message' => 'serial_number array and serial_quantity array do not match in size'
-            ]);
-        }
+        // if(count($request['serial_number']) != count($request['serial_quantity'])) {
+        //     return response()->json([
+        //         'code' => 400,
+        //         'status' => false,
+        //         'message' => 'serial_number array and serial_quantity array do not match in size'
+        //     ]);
+        // }
 
         if($validator->fails()) {
             return response()->json([
@@ -138,13 +138,13 @@ class EventController extends Controller
         ], [
             'serial_number.*.exists' => 'Serial number does not exist'
         ]);
-        if(count($request['serial_number']) != count($request['serial_quantity'])) {
-            return response()-json([
-                'code' => 400,
-                'status' => false,
-                'message' => 'serial_number array and serial_quantity array do not match in size'
-            ]);
-        }
+        // if(count($request['serial_number']) != count($request['serial_quantity'])) {
+        //     return response()-json([
+        //         'code' => 400,
+        //         'status' => false,
+        //         'message' => 'serial_number array and serial_quantity array do not match in size'
+        //     ]);
+        // }
 
         if($validator->fails()) {
             return response()->json([

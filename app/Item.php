@@ -3,6 +3,7 @@
 namespace App;
 
 use App\ItemSerialBarcode;
+use App\Tag;
 use Illuminate\Database\Eloquent\Model;
 
 class Item extends Model
@@ -19,4 +20,15 @@ class Item extends Model
         return $this->hasMany(ItemSerialBarcode::class);
     }
 
+    public function tagsClass() {
+        return $this->hasOne(Tag::class, 'id', 'class');
+    }
+
+    public function tagsCategory() {
+        return $this->hasOne(Tag::class, 'id', 'category');
+    }
+
+    public function tagstype() {
+        return $this->hasOne(Tag::class, 'id', 'type');
+    }
 }

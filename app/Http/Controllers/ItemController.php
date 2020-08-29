@@ -42,11 +42,13 @@ class ItemController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:items',
             'total_quantity' => 'required|integer',
-            'class' => 'required',
-            'category' => 'required',
-            'type' => 'required',
+            'class' => 'required|integer',
+            'category' => 'required|integer',
+            'type' => 'required|integer',
             'serial_number' => 'required|array',
-            'serial_number.*' => 'required|distinct|string|unique:item_serial_barcodes,serial_number'
+            'serial_number.*' => 'required|distinct|string|unique:item_serial_barcodes,serial_number',
+            'serial_quantity' => 'array',
+            'serial_quantity.*' => 'integer'
         ], [
             'name.unique' => 'Item already exists',
             'serial_number.*.unique' => 'Serial number already exists'
@@ -60,12 +62,12 @@ class ItemController extends Controller
             ], 400);
         } else {
             $item = Item::create(array_merge($validator->validated(), ['available_quantity' => $request['total_quantity']]));
-            foreach($request['serial_number'] as $serial) {
+            foreach(array_combine($request['serial_number'], $request['serial_quantity']) as $serial => $quantity) {
                 // qrcode is generated here.
                 $qrPath = DNS2D::getBarcodePNGPath(json_encode(
                     ['item_id' => $item['id'], 'serial_number' => $serial]
                 ), 'QRCODE');
-                $itemSerial = ItemSerialBarcode::create(['item_id' => $item['id'], 'serial_number' => $serial, 'qrcode_path' => $qrPath]);
+                $itemSerial = ItemSerialBarcode::create(['item_id' => $item['id'], 'serial_number' => $serial, 'total_quantity' => $quantity, 'available_quantity' => $quantity, 'qrcode_path' => $qrPath]);
             }
             return response()->json([
                 'code' => 200,

@@ -18,9 +18,12 @@ class CreateItemsTable extends Migration
             $table->string('name')->unique();
             $table->integer('total_quantity')->default(0);
             $table->integer('available_quantity')->default(0);
-            $table->string('class');
-            $table->string('category');
-            $table->string('type');
+            $table->foreignID('class')->references('id')->on('tags');
+            $table->foreignID('category')->references('id')->on('tags');
+            $table->foreignID('type')->references('id')->on('tags');
+            // $table->string('class');
+            // $table->string('category');
+            // $table->string('type');
             $table->timestamps();
         });
     }
