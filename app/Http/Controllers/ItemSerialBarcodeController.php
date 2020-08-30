@@ -18,8 +18,7 @@ class ItemSerialBarcodeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Item $item)
-    {
+    public function index(Item $item) {
         return $item->item_serial_barcodes;
     }
 
@@ -29,25 +28,8 @@ class ItemSerialBarcodeController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, Item $item)
-    {
-        // Currently UNUSED?
-        // This function acting like update for items
-        $validator = Vadidator::make($request->all(), [
-            'serial_number' => 'required|array',
-            'serial_number.*' => 'required|distinct|string|unique:item_serial_barcodes,serial_number'
-        ], [
-            'serial_number.*.unique' => 'Serial number already exists'
-        ]);
-
-        if($validator->fails()) {
-            return response()->json([
-                'code' => 400,
-                'status' => false,
-                'message' => $validator->errors()
-            ], 400);
-        }
-
+    public function store(Request $request, Item $item) {
+        //
     }
 
     /**
@@ -56,19 +38,15 @@ class ItemSerialBarcodeController extends Controller
      * @param  \App\ItemSerialBarcode  $itemSerialBarcode
      * @return \Illuminate\Http\Response
      */
-    public function show($serialNumber)
-    {
+    public function show($serialNumber) {
         $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
         return response()->json([
             'code' => 200,
             'status' => true,
-            'data' => [
-                'id' => $itemSerialBarcode->id,
-                'serial_number' => $itemSerialBarcode->serial_number,
-                'item_id' => $itemSerialBarcode->item_id,
-                'item_name' => $itemSerialBarcode->item->name,
-                'qrcode_path' => $itemSerialBarcode->qrcode_path
-            ]
+            // If a Relation in a Model is not accessed after being declared, it is not yet set in the Model's Collection instance.
+            // But, if the relation is accessed, then that relation is stored in the collection instance, and is accessable. Like in the following example.
+            // 'data' => array_merge([ 'item_name' => $itemSerialBarcode->item->name ], $itemSerialBarcode->toArray())
+            'data' => array_merge($itemSerialBarcode->toArray(), ['item_name' => $itemSerialBarcode->item->name])
         ]);
     }
 
@@ -79,9 +57,14 @@ class ItemSerialBarcodeController extends Controller
      * @param  \App\ItemSerialBarcode  $itemSerialBarcode
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, ItemSerialBarcode $itemSerialBarcode)
-    {
-        //
+    public function update(Request $request, $serialNumber) {
+        $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
+        $itemSerialBarcode->update(array_merge($request->all(), ['serial_number' => $serialNumber]));
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'message' => 'Serial Updated successfully'
+        ]);
     }
 
     /**
@@ -90,8 +73,13 @@ class ItemSerialBarcodeController extends Controller
      * @param  \App\ItemSerialBarcode  $itemSerialBarcode
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ItemSerialBarcode $itemSerialBarcode)
-    {
-        //
+    public function destroy($serialNumber) {
+        $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
+        $itemSerialBarcode->delete();
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'message' => 'Serial Deleted successfully'
+        ]);
     }
 }

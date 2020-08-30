@@ -85,7 +85,14 @@ class EventController extends Controller
         } else {
             $event = Event::create($validator->validated());
             // Items for events are added here
-            if(isset($request['serial_number'])) {
+            if(isset($request['serial_number']) and isset($request['serial_quantity'])) {
+                if(count($request['serial_number']) != count($request['serial_quantity'])) {
+                    return response()-json([
+                        'code' => 400,
+                        'status' => false,
+                        'message' => 'serial_number array and serial_quantity array do not match in size'
+                    ]);
+                }
                 $data = $this->addEventItems($request, $event['id']);
                 if(!$data['status']) {
                     $event->delete();
@@ -123,6 +130,7 @@ class EventController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Event $event) {
+        // Check for if event already ended.
         if($event->has_ended) {
             return response()->json([
                 'code' => 400,
@@ -138,13 +146,6 @@ class EventController extends Controller
         ], [
             'serial_number.*.exists' => 'Serial number does not exist'
         ]);
-        // if(count($request['serial_number']) != count($request['serial_quantity'])) {
-        //     return response()-json([
-        //         'code' => 400,
-        //         'status' => false,
-        //         'message' => 'serial_number array and serial_quantity array do not match in size'
-        //     ]);
-        // }
 
         if($validator->fails()) {
             return response()->json([
@@ -153,17 +154,27 @@ class EventController extends Controller
                 'message' => $validator->errors()
             ], 400);
         } else {
-            if(isset($request['serial_number'])) {
+            if(isset($request['serial_number']) and isset($request['serial_quantity'])) {
+                if(count($request['serial_number']) != count($request['serial_quantity'])) {
+                    return response()-json([
+                        'code' => 400,
+                        'status' => false,
+                        'message' => 'serial_number array and serial_quantity array do not match in size'
+                    ]);
+                }
+                // IN UPDATE, SERIALS ARE OVERWRITTEN. ASSUMING CLIENT MACHINE ALREADY HAS CURRENT SERIALS,
+                // FIRST WE "CLEAR OUT" EXISTING ITEMS BY CALLING clearEventItems. THEN ADD THEM BACK WITH NEW ITEMS BY CALLING addEventItems.
+                $this->clearEventItems($event['id']);
                 $data = $this->addEventItems($request, $event['id']);
                 if(!$data['status']) return response()->json($data);
             }
             $event->update($request->all());
+            return response()->json([
+                'code' => 200,
+                'status' => true,
+                'message' => 'Event Updated successfully'
+            ]);
         }
-        return response()->json([
-            'code' => 200,
-            'status' => true,
-            'message' => 'Event Updated successfully'
-        ]);
     }
 
     /**
@@ -172,8 +183,9 @@ class EventController extends Controller
      * @param  \App\Event  $event
      * @return \Illuminate\Http\Response
      */
-    // DOESN'T ACTUALLY DELETE
+    // DOESN'T ACTUALLY DELETE IN THIS IMPLEMENTATION
     public function destroy(Event $event) {
+        // Check for if event already ended
         if($event->has_ended) {
             return response()->json([
                 'code' => 400,
@@ -181,27 +193,9 @@ class EventController extends Controller
                 'message' => 'Event has already ended'
             ]);
         }
-        $eventItems = EventItem::where('event_id', $event['id'])->get();
-        foreach($eventItems as $eventItem) {
-            $itemSerialBarcode = ItemSerialBarcode::find($eventItem['item_serial_barcode_id']);
-            $item = Item::find($itemSerialBarcode->item_id);
-            if($item->available_quantity < $item->total_quantity and $itemSerialBarcode->available_quantity < $itemSerialBarcode->total_quantity) {
-                $itemSerialBarcode->update([
-                    'available_quantity' => $itemSerialBarcode->available_quantity + $eventItem->assigned_quantity,
-                    'is_available' => true
-                ]);
-                $item->update([
-                    'available_quantity' => $item->available_quantity + $eventItem->assigned_quantity
-                ]);
-            }
-            DB::table('event_items_history')->insert([
-                'event_id' => $eventItem->event_id,
-                'item_serial_barcode_id' => $eventItem->item_serial_barcode_id,
-                'assigned_quantity' => $eventItem->assigned_quantity,
-                'created_at' => Carbon::now()
-            ]);
-            $eventItem->delete();
-        }
+        // First "clear" all the event items.
+        $this->clearEventItems($event['id'], $fromDestroy=true);
+        // Then either delete event, or update the event->has_ended flag depending on implementation.
         // $event->delete();
         $event->update(['has_ended' => true]);
         return response()->json([
@@ -220,11 +214,11 @@ class EventController extends Controller
             $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serial)->first();
             // Following condition should not occur if front-end never has non-available serials
             if(!$itemSerialBarcode->is_available) {
-                return array(
+                return [
                     'code' => 400,
                     'status' => false,
                     'message' => "Serial number: $serial is already assigned to an event"
-                );
+                ];
             } else {
                 // SHOULD BE IN A DB TRANSACTION (later)
                 // Update available_quantity in items and itemserialbarcodes and set is_available to false in itemserialbarcode
@@ -241,11 +235,11 @@ class EventController extends Controller
                         'available_quantity' => $newItemQuant
                     ]);
                 } else {
-                    return array(
+                    return [
                         'code' => 400,
                         'status' => false,
                         'message' => "Item: $item->name Serial: $itemSerialBarcode->serial_number not available in sufficient quantity. Available: ($item->available_quantity, $itemSerialBarcode->available_quantity)"
-                    );
+                    ];
                 }
                 $eventItem = EventItem::create([
                     'event_id' => $event_id,
@@ -255,11 +249,43 @@ class EventController extends Controller
             }
         }
         // only status is used from below array, everything else does not matter, atleast right now.
-        return array(
+        return [
             'code' => 200,
             'status' => true,
             'message' => 'Event Created/Updated successfully'
-        );
+        ];
+    }
+
+    protected function clearEventItems($event_id, $fromDestroy=false) {
+        // Make all the items in the deleting event available first, and copy the list into event_item_history table if called from destroy().
+        $eventItems = EventItem::where('event_id', $event_id)->get();
+        foreach($eventItems as $eventItem) {
+            $itemSerialBarcode = ItemSerialBarcode::find($eventItem['item_serial_barcode_id']);
+            $item = Item::find($itemSerialBarcode->item_id);
+            if($item->available_quantity < $item->total_quantity and $itemSerialBarcode->available_quantity < $itemSerialBarcode->total_quantity) {
+                $itemSerialBarcode->update([
+                    'available_quantity' => $itemSerialBarcode->available_quantity + $eventItem->assigned_quantity,
+                    'is_available' => true
+                ]);
+                $item->update([
+                    'available_quantity' => $item->available_quantity + $eventItem->assigned_quantity
+                ]);
+            }
+            if($fromDestroy) {
+                DB::table('event_items_history')->insert([
+                    'event_id' => $eventItem->event_id,
+                    'item_serial_barcode_id' => $eventItem->item_serial_barcode_id,
+                    'assigned_quantity' => $eventItem->assigned_quantity,
+                    'created_at' => Carbon::now()
+                ]);
+            }
+            $eventItem->delete();
+        }
+        // return [
+        //     'code' => 200,
+        //     'status' => true,
+        //     'message' => 'Event Items cleared successfully',
+        // ];
     }
 
 }

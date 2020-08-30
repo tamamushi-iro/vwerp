@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => 'api', 'prefix' => 'user'], function ($router) {
     Route::post('register', 'UserController@register');
-    // Route::post('/register', 'UserController@registrationsClosed');
+    // Route::post('register', 'UserController@registrationsClosed');
     Route::post('login', 'UserController@login');
     Route::post('logout', 'UserController@logout');
     Route::post('refresh', 'UserController@refresh');
@@ -28,14 +28,16 @@ Route::group(['middleware' => 'api', 'prefix' => 'user'], function ($router) {
 });
 
 Route::group(['middleware' => 'api'], function ($router) {
-    Route::apiResource('items', 'ItemController');
-    Route::apiResource('items/{item}/serials', 'ItemSerialBarcodeController')->except(['show']);
-    Route::apiResource('serials', 'ItemSerialBarcodeController')->only(['show']);
+    Route::apiResource('items', 'ItemController')->except(['update']);
+    Route::post('items/update/{item}', 'ItemController@update');
+    Route::apiResource('items/{item}/serials', 'ItemSerialBarcodeController')->only(['index']);
+    Route::post('serials/update/{serial_number}', 'ItemSerialBarcodeController@update');
+    Route::apiResource('serials', 'ItemSerialBarcodeController')->only(['show', 'destroy']);
 });
 
 Route::group(['middleware' => 'api'], function ($router) {
     Route::apiResource('events', 'EventController')->except(['update']);
-    Route::post('/events/update/{event}', 'EventController@update');
+    Route::post('events/update/{event}', 'EventController@update');
     Route::apiResource('events/{event}/items', 'EventItemController')->only(['index']);
 });
 

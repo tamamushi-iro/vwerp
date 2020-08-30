@@ -10,8 +10,7 @@ use Validator;
 use Throwable;
 use Illuminate\Http\Request;
 
-class ItemController extends Controller
-{
+class ItemController extends Controller {
     public function __construct() {
         $this->middleware('auth:api');
     }
@@ -21,8 +20,7 @@ class ItemController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
+    public function index() {
         $itemResource = ItemResource::collection(Item::all());
         return response()->json([
             'code' => 200,
@@ -37,8 +35,7 @@ class ItemController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:items',
             'total_quantity' => 'required|integer',
@@ -47,8 +44,8 @@ class ItemController extends Controller
             'type' => 'required|integer',
             'serial_number' => 'required|array',
             'serial_number.*' => 'required|distinct|string|unique:item_serial_barcodes,serial_number',
-            'serial_quantity' => 'array',
-            'serial_quantity.*' => 'integer'
+            'serial_quantity' => 'required|array',
+            'serial_quantity.*' => 'required|integer'
         ], [
             'name.unique' => 'Item already exists',
             'serial_number.*.unique' => 'Serial number already exists'
@@ -64,9 +61,7 @@ class ItemController extends Controller
             $item = Item::create(array_merge($validator->validated(), ['available_quantity' => $request['total_quantity']]));
             foreach(array_combine($request['serial_number'], $request['serial_quantity']) as $serial => $quantity) {
                 // qrcode is generated here.
-                $qrPath = DNS2D::getBarcodePNGPath(json_encode(
-                    ['item_id' => $item['id'], 'serial_number' => $serial]
-                ), 'QRCODE');
+                $qrPath = DNS2D::getBarcodePNGPath(json_encode(['item_id' => $item['id'], 'serial_number' => $serial]), 'QRCODE');
                 $itemSerial = ItemSerialBarcode::create(['item_id' => $item['id'], 'serial_number' => $serial, 'total_quantity' => $quantity, 'available_quantity' => $quantity, 'qrcode_path' => $qrPath]);
             }
             return response()->json([
@@ -84,8 +79,7 @@ class ItemController extends Controller
      * @param  \App\Item  $item
      * @return \Illuminate\Http\Response
      */
-    public function show(Item $item)
-    {
+    public function show(Item $item) {
         $itemResource = new ItemResource($item);
         return response()->json([
             'code' => 200,
@@ -101,11 +95,13 @@ class ItemController extends Controller
      * @param  \App\Item  $item
      * @return \Illuminate\Http\Response
      */
-    // SERIAL VADU UPDATE BAKI?
-    public function update(Request $request, Item $item)
-    {
+    public function update(Request $request, Item $item) {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
+            'serial_number' => 'array',
+            'serial_number.*' => 'distinct|string|unique:item_serial_barcodes,serial_number',
+            'serial_quantity' => 'array',
+            'serial_quantity.*' => 'integer'
         ]);
 
         if($validator->fails()) {
@@ -115,6 +111,27 @@ class ItemController extends Controller
                 'message' => $validator->errors()
             ], 400);
         } else {
+            // ONLY NEW SERIALS ARE ADDED HERE. TO DELETE/CHANGE OLD SERIALS, USE API'S OF ItemSerialBarcodeController
+            if(isset($request['serial_number']) and isset($request['serial_quantity'])) {
+                if(count($request['serial_number']) != count($request['serial_quantity'])) {
+                    return response()-json([
+                        'code' => 400,
+                        'status' => false,
+                        'message' => 'serial_number array and serial_quantity array do not match in size'
+                    ]);
+                }
+                foreach(array_combine($request['serial_number'], $request['serial_quantity']) as $serial => $quantity) {
+                    // qrcode is generated here.
+                    $qrPath = DNS2D::getBarcodePNGPath(json_encode(
+                        ['item_id' => $item['id'], 'serial_number' => $serial]
+                    ), 'QRCODE');
+                    $itemSerial = ItemSerialBarcode::create([
+                        'item_id' => $item['id'], 'serial_number' => $serial,
+                        'total_quantity' => $quantity, 'available_quantity' => $quantity,
+                        'qrcode_path' => $qrPath
+                    ]);
+                }
+            }
             $item->update($request->all());
             return response()->json([
                 'code' => 200,
@@ -130,9 +147,8 @@ class ItemController extends Controller
      * @param  \App\Item  $item
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Item $item)
-    {
-        $product->delete();
+    public function destroy(Item $item) {
+        $item->delete();
         return response()->json([
             'code' => 200,
             'status' => true,
