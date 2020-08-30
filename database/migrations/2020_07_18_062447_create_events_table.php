@@ -14,6 +14,7 @@ class CreateEventsTable extends Migration
     public function up()
     {
         Schema::create('events', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             // $table->unsignedInt('order_id');
             $table->string('name');

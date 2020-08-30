@@ -14,6 +14,7 @@ class CreateEventItemsTable extends Migration
     public function up()
     {
         Schema::create('event_items', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->foreignID('event_id')->constrained()->onDelete('cascade');
             $table->foreignID('item_serial_barcode_id')->constrained();

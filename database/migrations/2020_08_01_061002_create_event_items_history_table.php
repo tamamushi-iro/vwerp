@@ -14,6 +14,7 @@ class CreateEventItemsHistoryTable extends Migration
     public function up()
     {
         Schema::create('event_items_history', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->foreignID('event_id');
             $table->foreignID('item_serial_barcode_id');
