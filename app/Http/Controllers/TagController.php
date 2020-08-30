@@ -93,9 +93,14 @@ class TagController extends Controller
      * @param  \App\Tag  $tag
      * @return \Illuminate\Http\Response
      */
-    // public function update(Request $request, $tag_id) {
-    //     //
-    // }
+    public function update(Request $request, Tag $tag) {
+        $tag->update($request->all());
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'message' => 'Tag updated successfully'
+        ]);
+    }
 
     /**
      * Remove the specified resource from storage.

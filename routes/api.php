@@ -42,7 +42,7 @@ Route::group(['middleware' => 'api'], function ($router) {
 });
 
 Route::group(['middleware' => 'api'], function () {
-    Route::apiResource('tags', 'TagController')->except(['update']);
+    Route::apiResource('tags', 'TagController');
 });
 
 // Route::fallback(function() {
