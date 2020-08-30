@@ -28,7 +28,7 @@ class ItemResource extends JsonResource
             $array['category'] = 'Unknown';
         }
         try {
-            $array['type'] = $this->tagsCategory->tag_name;
+            $array['type'] = $this->tagsType->tag_name;
         } catch (Throwable $e) {
             $array['type'] = 'Unknown';
         }
