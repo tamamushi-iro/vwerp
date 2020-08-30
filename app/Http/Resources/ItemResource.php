@@ -19,12 +19,18 @@ class ItemResource extends JsonResource
         // TO BE REMOVED:
         try {
             $array['class'] = $this->tagsClass->tag_name;
-            $array['category'] = $this->tagsCategory->tag_name;
-            $array['type'] = $this->tagsType->tag_name;
         } catch (Throwable $e) {
-            $array['class'] = 'Tag Deleted';
-            $array['category'] = 'Tag Deleted';
-            $array['type'] = 'Tag Deleted';
+            $array['class'] = 'Unknown';
+        }
+        try {
+            $array['category'] = $this->tagsCategory->tag_name;
+        } catch (Throwable $e) {
+            $array['category'] = 'Unknown';
+        }
+        try {
+            $array['type'] = $this->tagsCategory->tag_name;
+        } catch (Throwable $e) {
+            $array['type'] = 'Unknown';
         }
         if(isset($request['show']) and $request['show'] == 'available') {
             foreach($this->item_serial_barcodes as $itemSerialBarcode) {
