@@ -97,7 +97,6 @@ class ItemController extends Controller {
      */
     public function update(Request $request, Item $item) {
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
             'serial_number' => 'array',
             'serial_number.*' => 'distinct|string|unique:item_serial_barcodes,serial_number',
             'serial_quantity' => 'array',
