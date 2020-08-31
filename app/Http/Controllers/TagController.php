@@ -109,7 +109,16 @@ class TagController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy(Tag $tag) {
-        $tag->delete();
+        try {
+            $tag->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json([
+                'code' => 400,
+                'status' => false,
+                'debug' => $e->getMessage(),
+                'message' => 'Tag cannot be deleted. It is probably in use.'
+            ]);
+        }
         return response()->json([
             'code' => 200,
             'status' => true,
