@@ -117,7 +117,7 @@ class TagController extends Controller
                 'status' => false,
                 'debug' => $e->getMessage(),
                 'message' => 'Tag cannot be deleted. It is probably in use.'
-            ]);
+            ], 400);
         }
         return response()->json([
             'code' => 200,
