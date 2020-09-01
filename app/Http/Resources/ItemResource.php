@@ -16,21 +16,21 @@ class ItemResource extends JsonResource
     public function toArray($request)
     {
         $array = parent::toArray($request);
-        // TO BE REMOVED:
+        // TO BE REMOVED: OR NOT?
         try {
-            $array['class'] = $this->tagsClass->tag_name;
+            $array['class'] = strtoupper($this->tagsClass->tag_name);
         } catch (Throwable $e) {
-            $array['class'] = 'Unknown';
+            $array['class'] = 'UNKNOWN';
         }
         try {
-            $array['category'] = $this->tagsCategory->tag_name;
+            $array['category'] = strtoupper($this->tagsCategory->tag_name);
         } catch (Throwable $e) {
-            $array['category'] = 'Unknown';
+            $array['category'] = 'UNKONWN';
         }
         try {
-            $array['type'] = $this->tagsType->tag_name;
+            $array['type'] = strtoupper($this->tagsType->tag_name);
         } catch (Throwable $e) {
-            $array['type'] = 'Unknown';
+            $array['type'] = 'UNKNOWN';
         }
         if(isset($request['show']) and $request['show'] == 'available') {
             foreach($this->item_serial_barcodes as $itemSerialBarcode) {
