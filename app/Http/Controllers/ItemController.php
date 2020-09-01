@@ -48,14 +48,16 @@ class ItemController extends Controller {
             'serial_quantity.*' => 'required|integer'
         ], [
             'name.unique' => 'Item already exists',
-            'serial_number.*.unique' => 'Serial number already exists'
+            'serial_number.*.unique' => 'A serial number you entered already exists'
         ]);
 
         if($validator->fails()) {
             return response()->json([
                 'code' => 400,
                 'status' => false,
-                'message' => $validator->errors()
+                // No same person should write the code below.
+                'message' => ($validator->errors()->has('serial_number.*')) ? current($validator->errors()->get('serial_number.*'))[0] : $validator->errors(),
+                'validator_errors' => $validator->errors()
             ], 400);
         } else {
             $item = Item::create(array_merge($validator->validated(), ['available_quantity' => $request['total_quantity']]));
@@ -101,13 +103,17 @@ class ItemController extends Controller {
             'serial_number.*' => 'distinct|string|unique:item_serial_barcodes,serial_number',
             'serial_quantity' => 'array',
             'serial_quantity.*' => 'integer'
+        ], [
+            'serial_number.*.unique' => 'A serial number you entered already exists'
         ]);
 
         if($validator->fails()) {
             return response()->json([
                 'code' => 400,
                 'status' => false,
-                'message' => $validator->errors()
+                // WEIRDLY PROUD OF WHATS HAPPENING IN THE BELOW CODE
+                'message' => ($validator->errors()->has('serial_number.*')) ? current($validator->errors()->get('serial_number.*'))[0] : $validator->errors(),
+                'validator_errors' => $validator->errors()
             ], 400);
         } else {
             // ONLY NEW SERIALS ARE ADDED HERE. TO DELETE/CHANGE OLD SERIALS, USE API'S OF ItemSerialBarcodeController
@@ -117,7 +123,7 @@ class ItemController extends Controller {
                         'code' => 400,
                         'status' => false,
                         'message' => 'serial_number array and serial_quantity array do not match in size'
-                    ]);
+                    ], 400);
                 }
                 foreach(array_combine($request['serial_number'], $request['serial_quantity']) as $serial => $quantity) {
                     // qrcode is generated here.
