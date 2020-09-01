@@ -28,9 +28,9 @@ class ItemSerialBarcodeController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, Item $item) {
+    // public function store(Request $request, Item $item) {
         //
-    }
+    // }
 
     /**
      * Display the specified resource.
@@ -57,8 +57,8 @@ class ItemSerialBarcodeController extends Controller
      * @param  \App\ItemSerialBarcode  $itemSerialBarcode
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $serialNumber) {
-        $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
+    public function update(Request $request, ItemSerialBarcode $itemSerialBarcode) {
+        // $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
         $itemSerialBarcode->update(array_merge($request->all(), ['serial_number' => $serialNumber]));
         return response()->json([
             'code' => 200,
@@ -73,9 +73,18 @@ class ItemSerialBarcodeController extends Controller
      * @param  \App\ItemSerialBarcode  $itemSerialBarcode
      * @return \Illuminate\Http\Response
      */
-    public function destroy($serialNumber) {
-        $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
-        $itemSerialBarcode->delete();
+    public function destroy(ItemSerialBarcode $itemSerialBarcode) {
+        // $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
+        try {
+            $itemSerialBarcode->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json([
+                'code' => 400,
+                'status' => false,
+                'debug' => $e->getMessage(),
+                'message' => 'Serial cannot be deleted. It is probably in use.'
+            ], 400);
+        }
         return response()->json([
             'code' => 200,
             'status' => true,
