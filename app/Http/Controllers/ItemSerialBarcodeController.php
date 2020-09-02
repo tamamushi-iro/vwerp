@@ -60,7 +60,7 @@ class ItemSerialBarcodeController extends Controller
     public function update(Request $request, ItemSerialBarcode $serial) {
         // $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
         // TO BE REMOVED:
-        $serial->update(array_merge($request->all(), ['serial_number' => $serial->serialNumber]));
+        $serial->update($request->all());
         return response()->json([
             'code' => 200,
             'status' => true,
