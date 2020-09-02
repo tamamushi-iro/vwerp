@@ -42,9 +42,17 @@ class ItemResource extends JsonResource {
             foreach($this->item_serial_barcodes as $itemSerialBarcode) {
                 $eventItem = EventItem::where('item_serial_barcode_id', $itemSerialBarcode->id)->first();
                 if(!is_null($eventItem)) {
-                    $array['serials'][] = array_merge($itemSerialBarcode->toArray(), ['event_id' => $eventItem->event_id, 'event_name' => $eventItem->events->name]);
+                    $array['serials'][] = array_merge($itemSerialBarcode->toArray(), [
+                        'event_id' => $eventItem->event_id,
+                        'event_name' => $eventItem->events->name,
+                        'assigned_quantity' => $eventItem->assigned_quantity
+                    ]);
                 } else {
-                    $array['serials'][] = $itemSerialBarcode;
+                    $array['serials'][] = array_merge($itemSerialBarcode->toArray(), [
+                        'event_id' => NULL,
+                        'event_name' => NULL,
+                        'assigned_quantity' => NULL
+                    ]);
                 }
             }
         }
