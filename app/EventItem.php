@@ -17,7 +17,7 @@ class EventItem extends Model
     ];
 
     public function events() {
-        return $this->belongsTo(Event::class);
+        return $this->belongsTo(Event::class, 'event_id', 'id');
     }
 
     public function item_serial_barcode() {
