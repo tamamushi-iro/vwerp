@@ -57,9 +57,10 @@ class ItemSerialBarcodeController extends Controller
      * @param  \App\ItemSerialBarcode  $itemSerialBarcode
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, ItemSerialBarcode $itemSerialBarcode) {
+    public function update(Request $request, ItemSerialBarcode $serial) {
         // $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
-        $itemSerialBarcode->update(array_merge($request->all(), ['serial_number' => $serialNumber]));
+        // TO BE REMOVED:
+        $serial->update(array_merge($request->all(), ['serial_number' => $serial->serialNumber]));
         return response()->json([
             'code' => 200,
             'status' => true,
@@ -73,10 +74,9 @@ class ItemSerialBarcodeController extends Controller
      * @param  \App\ItemSerialBarcode  $itemSerialBarcode
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ItemSerialBarcode $itemSerialBarcode) {
-        // $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
+    public function destroy(ItemSerialBarcode $serial) {
         try {
-            $itemSerialBarcode->delete();
+            $serial->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json([
                 'code' => 400,

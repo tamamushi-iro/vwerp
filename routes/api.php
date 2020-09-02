@@ -30,9 +30,9 @@ Route::group(['middleware' => 'api', 'prefix' => 'user'], function ($router) {
 Route::group(['middleware' => 'api'], function ($router) {
     Route::apiResource('items', 'ItemController')->except(['update']);
     Route::post('items/update/{item}', 'ItemController@update');
-    Route::apiResource('items/{item}/serials', 'ItemSerialBarcodeController')->only(['index']);
-    Route::post('serials/update/{serial_number}', 'ItemSerialBarcodeController@update');
     Route::apiResource('serials', 'ItemSerialBarcodeController')->only(['show', 'destroy']);
+    Route::post('serials/update/{serial}', 'ItemSerialBarcodeController@update');
+    Route::apiResource('items/{item}/serials', 'ItemSerialBarcodeController')->only(['index']);
 });
 
 Route::group(['middleware' => 'api'], function ($router) {
