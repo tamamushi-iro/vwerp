@@ -39,14 +39,21 @@ class ItemSerialBarcodeController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($serialNumber) {
+        // IMPLEMENT FIND OR FAIL
         $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
+        $eventItem = EventItem::where('item_serial_barcode_id', $itemSerialBarcode->id)->first();
         return response()->json([
             'code' => 200,
             'status' => true,
             // If a Relation in a Model is not accessed after being declared, it is not yet set in the Model's Collection instance.
             // But, if the relation is accessed, then that relation is stored in the collection instance, and is accessable. Like in the following example.
             // 'data' => array_merge([ 'item_name' => $itemSerialBarcode->item->name ], $itemSerialBarcode->toArray())
-            'data' => array_merge($itemSerialBarcode->toArray(), ['item_name' => $itemSerialBarcode->item->name])
+            'data' => array_merge($itemSerialBarcode->toArray(), [
+                'item_name' => $itemSerialBarcode->item->name,
+                'event_id' => (!is_null($eventItem)) ? $eventItem->event_id : NULL,
+                'event_name' => (!is_null($eventItem)) ? $eventItem->events->name : NULL,
+                'assigned_quantity' => (!is_null($eventItem)) ? $eventItem->assigned_quantity : NULL
+            ])
         ]);
     }
 

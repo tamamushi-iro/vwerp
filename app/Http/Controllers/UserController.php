@@ -20,7 +20,6 @@ class UserController extends Controller
 
     // REGISTER
     public function register(Request $request) {
-
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'email' => 'required|email|unique:users',
@@ -51,12 +50,10 @@ class UserController extends Controller
                 'message' => 'User Registered'
             ]);
         }
-
     }
 
     // LOGIN
     public function login(Request $request) {
-
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required|string|min:6'
@@ -87,7 +84,6 @@ class UserController extends Controller
                 ]);
             }
         }
-
     }
 
     // LOGOUT
@@ -100,23 +96,23 @@ class UserController extends Controller
         ]);
     }
 
+    // Refresh Token
+    public function refresh() {
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'message' => 'Token Refreshed',
+            'user' => auth()->user(),
+            'session' => $this->createNewToken(auth()->refresh())
+        ]);
+    }
+
     protected function createNewToken($token) {
-        return array(
+        return [
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60
-        );
-    }
-
-    // Refresh Token
-    public function refresh() {
-        $user = auth()->user();
-        return response()->json([
-            'code' => 200,
-            'message' => 'Token Refreshed',
-            'user' => $user,
-            'session' => $this->createNewToken($token)
-        ]);
+        ];
     }
 
     // Get User Details
@@ -126,12 +122,10 @@ class UserController extends Controller
 
     // REGISTRATIONS CLOSED
     public function registrationsClosed(Request $request) {
-
         return response()->json([
             'code' => 200,
             'message' => 'Registrations are Closed'
         ]);
-
     }
 
 }
