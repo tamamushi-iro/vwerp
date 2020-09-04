@@ -8,8 +8,8 @@ use App\EventItem;
 // use App\Http\Resources\SerialResource;
 use Illuminate\Http\Request;
 
-class ItemSerialBarcodeController extends Controller
-{
+class ItemSerialBarcodeController extends Controller {
+    
     public function __construct() {
         $this->middleware('auth:api');
     }
@@ -41,7 +41,7 @@ class ItemSerialBarcodeController extends Controller
      */
     public function show($serialNumber) {
         // IMPLEMENT FIND OR FAIL
-        $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->first();
+        $itemSerialBarcode = ItemSerialBarcode::where('serial_number', $serialNumber)->firstOrFail();
         $eventItem = EventItem::where('item_serial_barcode_id', $itemSerialBarcode->id)->first();
         return response()->json([
             'code' => 200,

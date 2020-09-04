@@ -90,7 +90,7 @@ class EventController extends Controller
                     return response()-json([
                         'code' => 400,
                         'status' => false,
-                        'message' => 'serial_number array and serial_quantity array do not match in size'
+                        'message' => "'serial_number' array and 'serial_quantity' array do not match in size"
                     ]);
                 }
                 $data = $this->addEventItems($request, $event['id']);

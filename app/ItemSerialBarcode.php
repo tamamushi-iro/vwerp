@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ItemSerialBarcode extends Model
 {
     protected $fillable = [
-        'item_id', 'serial_number', 'qrcode_path', 'total_quantity', 'available_quantity',
+        'item_id', 'serial_number', 'qrcode_path', 'total_quantity', 'available_quantity', 'lost_quantity',
         'is_lost', 'is_available', 'notes'
     ];
 
