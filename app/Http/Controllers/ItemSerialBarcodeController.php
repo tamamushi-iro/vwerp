@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Item;
 use App\ItemSerialBarcode;
+use App\EventItem;
 // use App\Http\Resources\SerialResource;
 use Illuminate\Http\Request;
 
