@@ -18,12 +18,21 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // });
 
+Route::group(['middleware' => 'api', 'prefix' => 'admin'], function ($router) {
+    Route::post('register', 'AdminController@register');
+    // Route::post('register', 'AdminController@registrationsClosed');
+    Route::post('login', 'AdminController@login');
+    Route::get('logout', 'AdminController@logout');
+    Route::get('refresh', 'AdminController@refresh');
+    Route::get('profile', 'AdminController@profile');
+});
+
 Route::group(['middleware' => 'api', 'prefix' => 'user'], function ($router) {
     Route::post('register', 'UserController@register');
     // Route::post('register', 'UserController@registrationsClosed');
     Route::post('login', 'UserController@login');
-    Route::post('logout', 'UserController@logout');
-    Route::post('refresh', 'UserController@refresh');
+    Route::get('logout', 'UserController@logout');
+    Route::get('refresh', 'UserController@refresh');
     Route::get('profile', 'UserController@profile');
 });
 

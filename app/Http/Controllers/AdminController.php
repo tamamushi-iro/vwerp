@@ -2,21 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
+use App\Admin;
 use Validator;
-use App\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
-class UserController extends Controller {
+class AdminController extends Controller {
 
     // Class Constructor
     // Methods in 'except' are not authenticated by the auth middleware.
     public function __construct() {
-        $this->middleware('auth:api', [
-            'except' => ['login', 'register']
-        ]);
         $this->middleware('auth:admins', [
-            'only' => ['register']
+            'except' => ['login', 'register']
         ]);
     }
 
@@ -24,9 +21,7 @@ class UserController extends Controller {
     public function register(Request $request) {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'phone' => 'required|unique:users|regex:/^[0-9]{10}$/',
-            'address' => 'required|max:255',
+            'email' => 'required|email|unique:admins',
             'password' => 'required|string|confirmed|min:6'
         ]);
 
@@ -38,18 +33,11 @@ class UserController extends Controller {
             ], 400);
         } else {
             $input = array_merge($validator->validated(), ['password' => bcrypt($request['password'])]);
-            $user = User::create($input);
-            $userData = [
-                'id' => $user['id'],
-                'name' => $user['name'],
-                'email' => $user['email'],
-                'phone' => $input['phone'],
-                'address' => $input['address']
-            ];
+            $admin = Admin::create($input);
             return response()->json([
                 'code' => 200,
-                'data' => $userData,
-                'message' => 'User Registered'
+                'data' => $admin,
+                'message' => 'Admin Registered'
             ]);
         }
     }
@@ -69,20 +57,20 @@ class UserController extends Controller {
             ], 400);
         } else {
             // If security problems, use: attempt(['email' => request('email'), 'password' => request('password')])
-            if(!$token = auth()->attempt($validator->validated())) {
+            if(!$token = Auth::guard('admins')->attempt($validator->validated())) {
                 return response()->json([
                     'code' => 401,
                     'status' => false,
-                    'message' => 'Invalid Credentials. User Unauthorized.'
+                    'message' => 'Invalid Credentials. Admin Unauthorized.'
                 ], 401);
             } else {
-                $user = auth()->user();
-                $data = $user;
+                $admin = Auth::guard('admins')->user();
+                $data = $admin;
                 $data['session_token'] = $token;
                 return response()->json([
                     'code' => 200,
-                    'data' => $user,
-                    'message' => "User logged in successfully"
+                    'data' => $admin,
+                    'message' => "Admin logged in successfully"
                 ]);
             }
         }
@@ -90,11 +78,11 @@ class UserController extends Controller {
 
     // LOGOUT
     public function logout() {
-        auth()->logout();
+        Auth::guard('admins')->logout();
         return response()->json([
             'code' => 200,
             'status' => true,
-            'message' => 'User logged out successfully'
+            'message' => 'Admin logged out successfully'
         ]);
     }
 
@@ -104,8 +92,8 @@ class UserController extends Controller {
             'code' => 200,
             'status' => true,
             'message' => 'Token Refreshed',
-            'user' => auth()->user(),
-            'session' => $this->createNewToken(auth()->refresh())
+            'admin' => Auth::guard('admins')->user(),
+            'session' => $this->createNewToken(Auth::guard('admins')->refresh())
         ]);
     }
 
@@ -113,21 +101,21 @@ class UserController extends Controller {
         return [
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
+            'expires_in' => Auth::guard('admins')->factory()->getTTL() * 60
         ];
     }
 
     // Get User Details
     public function profile() {
-        return response()->json(auth()->user());
+        return response()->json(Auth::guard('admins')->user());
     }
 
     // REGISTRATIONS CLOSED
     public function registrationsClosed(Request $request) {
         return response()->json([
             'code' => 200,
-            'message' => 'Registrations are Closed'
+            'message' => 'Registrations are Closed for Admins'
         ]);
     }
-
+    
 }
