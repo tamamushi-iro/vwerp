@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
@@ -65,6 +66,13 @@ class Handler extends ExceptionHandler
                 'status' => false,
                 'message' => $exception->getMessage()
             ], 405);
+        }
+        if($exception instanceof AuthenticationException) {
+            return response()->json([
+                'code' => 401,
+                'status' => false,
+                'message' => 'Not authorized'
+            ], 401);
         }
 
         // Other Http Exceptions

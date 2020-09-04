@@ -25,16 +25,16 @@ class Authenticate extends Middleware
     // }
 
     // CA
-    public function handle($request, Closure $next) {
-        if(Auth::check()) {
-            return $next($request);
-        } else {
-            return response()->json([
-                'code' => 401,
-                'status' => false,
-                'message' => 'Not authorized'
-            ], 401);
-        }
-    }
+    // public function handle($request, Closure $next) {
+    //     if(Auth::check() or Auth::guard('admins')->check()) {
+    //         return $next($request);
+    //     } else {
+    //         return response()->json([
+    //             'code' => 401,
+    //             'status' => false,
+    //             'message' => 'Not authorized'
+    //         ], 401);
+    //     }
+    // }
 
 }
