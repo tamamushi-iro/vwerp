@@ -48,6 +48,7 @@ class UserController extends Controller {
             ];
             return response()->json([
                 'code' => 200,
+                'status' => true,
                 'data' => $userData,
                 'message' => 'User Registered'
             ]);
@@ -81,6 +82,7 @@ class UserController extends Controller {
                 $data['session_token'] = $token;
                 return response()->json([
                     'code' => 200,
+                    'status' => true,
                     'data' => $user,
                     'message' => "User logged in successfully"
                 ]);
@@ -125,8 +127,9 @@ class UserController extends Controller {
     // REGISTRATIONS CLOSED
     public function registrationsClosed(Request $request) {
         return response()->json([
-            'code' => 200,
-            'message' => 'Registrations are Closed'
+            'code' => 403,
+            'status' => false,
+            'message' => 'User Registrations are Closed'
         ]);
     }
 

@@ -36,6 +36,7 @@ class AdminController extends Controller {
             $admin = Admin::create($input);
             return response()->json([
                 'code' => 200,
+                'status' => true,
                 'data' => $admin,
                 'message' => 'Admin Registered'
             ]);
@@ -69,6 +70,7 @@ class AdminController extends Controller {
                 $data['session_token'] = $token;
                 return response()->json([
                     'code' => 200,
+                    'status' => true,
                     'data' => $admin,
                     'message' => "Admin logged in successfully"
                 ]);
@@ -113,7 +115,8 @@ class AdminController extends Controller {
     // REGISTRATIONS CLOSED
     public function registrationsClosed(Request $request) {
         return response()->json([
-            'code' => 200,
+            'code' => 403,
+            'status' => false,
             'message' => 'Registrations are Closed for Admins'
         ]);
     }
