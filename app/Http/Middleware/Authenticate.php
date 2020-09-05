@@ -15,7 +15,7 @@ class Authenticate extends Middleware
      * @return string|null
      */
 
-    //  CA
+    // CA
     // protected function redirectTo($request)
     // {
     //     
