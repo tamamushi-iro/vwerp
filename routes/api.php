@@ -34,6 +34,8 @@ Route::group(['middleware' => 'api', 'prefix' => 'user'], function ($router) {
     Route::get('logout', 'UserController@logout');
     Route::get('refresh', 'UserController@refresh');
     Route::get('profile', 'UserController@profile');
+    Route::get('index', 'UserController@index');
+    Route::delete('delete/{user}', 'UserController@destroy');
 });
 
 Route::group(['middleware' => 'api'], function ($router) {

@@ -13,10 +13,10 @@ class UserController extends Controller {
     // Methods in 'except' are not authenticated by the auth middleware.
     public function __construct() {
         $this->middleware('auth:api', [
-            'except' => ['login', 'register']
+            'except' => ['login', 'register', 'index', 'destroy']
         ]);
         $this->middleware('auth:admins', [
-            'only' => ['register']
+            'only' => ['register', 'index', 'destroy']
         ]);
     }
 
@@ -130,6 +130,23 @@ class UserController extends Controller {
             'code' => 403,
             'status' => false,
             'message' => 'User Registrations are Closed'
+        ]);
+    }
+
+    public function index() {
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'data' => User::all()
+        ]);
+    }
+
+    public function destroy(User $user) {
+        $user->delete();
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'message' => 'User Deleted successfully'
         ]);
     }
 
