@@ -16,8 +16,8 @@ class EventController extends Controller
 {
 
     public function __construct() {
-        $this->middleware('auth:api');
-        $this->middleware('auth:admins');
+        $this->middleware('auth:api,admins');
+        // $this->middleware('auth:admins');
     }
 
     /**
