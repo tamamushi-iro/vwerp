@@ -46,26 +46,26 @@ class EventController extends Controller
      */
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
+            // 'invoice_number' => 'string|unique:events',
             'name' => 'required',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
             'reporting_date' => 'required|date',
             'location' => 'required',
             'client_name' => 'required',
-            'client_phone' => 'required|regex:/^[0-9]{10}$/',
+            'client_email' => 'required|email',
+            'client_phone' => 'required',
             'client_company' => 'required',
-            'technician_name' => 'required',
-            'technician_details' => 'required',
-            'vehicle_number' => 'required',
-            'driver_name' => 'required',
-            'driver_phone' => 'required|regex:/^[0-9]{10}$/',
-            'invoice_number' => 'string',
+            'technician_name' => 'string',
+            'technician_phone' => 'string',
+            'vehicle_number' => 'string',
+            'driver_name' => 'string',
+            'driver_phone' => 'string',
             'priority' => 'string',
             'serial_number' => 'array',
             'serial_number.*' => 'distinct|string|exists:item_serial_barcodes,serial_number',
             'serial_quantity' => 'array',
             'serial_quantity.*' => 'integer'
-            // 'invoice_number' => 'required|unique:events'
         ], [
             'serial_number.*.exists' => 'Serial number does not exist'
         ]);
@@ -84,7 +84,13 @@ class EventController extends Controller
                 'message' => $validator->errors()
             ], 400);
         } else {
+            // Create Event
             $event = Event::create($validator->validated());
+            // Auto-Generate Invoice Number as: VW-MMYYYY-ID
+            $date = Carbon::parse(Carbon::now());
+            $month = ($date->month < 10) ? "0$date->month" : $date->month;
+            $invoiceNo = "VW-$month$date->year-$event->id";
+            $event->update(['invoice_number' => $invoiceNo]);
             // Items for events are added here
             if(isset($request['serial_number']) and isset($request['serial_quantity'])) {
                 if(count($request['serial_number']) != count($request['serial_quantity'])) {

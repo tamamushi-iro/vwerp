@@ -9,11 +9,12 @@ class Event extends Model
 {
 
     protected $fillable = [
-        'name', 'start_date', 'end_date', 'reporting_date', 'location',
-        'client_name', 'client_phone', 'client_company',
-        'technician_name', 'technician_details', 'vehicle_number', 'driver_name', 'driver_phone',
         'invoice_number',
-        'priority', 'has_ended'
+        'name', 'start_date', 'end_date', 'reporting_date', 'location',
+        'client_name', 'client_email', 'client_phone', 'client_company',
+        'technician_name', 'technician_phone', 'vehicle_number', 'driver_name', 'driver_phone',
+        'priority',
+        'has_ended', 'is_final', 'mail_sent'
     ];
 
     protected $hidden = [
