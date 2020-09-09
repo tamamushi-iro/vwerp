@@ -26,7 +26,6 @@ class UserController extends Controller {
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'phone' => 'required|unique:users|regex:/^[0-9]{10}$/',
-            'address' => 'required|max:255',
             'password' => 'required|string|confirmed|min:6'
         ]);
 
@@ -43,8 +42,7 @@ class UserController extends Controller {
                 'id' => $user['id'],
                 'name' => $user['name'],
                 'email' => $user['email'],
-                'phone' => $input['phone'],
-                'address' => $input['address']
+                'phone' => $input['phone']
             ];
             return response()->json([
                 'code' => 200,
