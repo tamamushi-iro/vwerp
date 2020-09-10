@@ -65,6 +65,7 @@ class AdminController extends Controller {
                     'message' => 'Invalid Credentials. Admin Unauthorized.'
                 ], 401);
             } else {
+                // Here $data and $admin share the same reference, changes in $data are reflected in $admin also.
                 $admin = Auth::guard('admins')->user();
                 $data = $admin;
                 $data['session_token'] = $token;

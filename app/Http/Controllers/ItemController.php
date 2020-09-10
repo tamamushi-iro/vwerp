@@ -55,7 +55,7 @@ class ItemController extends Controller {
             return response()->json([
                 'code' => 400,
                 'status' => false,
-                // No same person should write the code below.
+                // No sane person should write the code below.
                 'message' => ($validator->errors()->has('serial_number.*')) ? current($validator->errors()->get('serial_number.*'))[0] : $validator->errors(),
                 'validator_errors' => $validator->errors()
             ], 400);
