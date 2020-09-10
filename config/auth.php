@@ -52,6 +52,10 @@ return [
             'provider' => 'admins',
         ],
 
+        'whusers' => [
+            'driver' => 'jwt',
+            'provider' => 'whusers',
+        ],
     ],
 
     /*
@@ -72,7 +76,6 @@ return [
     */
 
     'providers' => [
-
         'users' => [
             'driver' => 'eloquent',
             'model' => App\User::class,
@@ -81,6 +84,11 @@ return [
         'admins' => [
             'driver' => 'eloquent',
             'model' => App\Admin::class,
+        ],
+
+        'whusers' => [
+            'driver' => 'eloquent',
+            'model' => App\WarehouseUser::class,
         ],
 
         // 'users' => [
@@ -114,6 +122,12 @@ return [
 
         'admins' => [
             'provider' => 'admins',
+            'table' => 'password_resets',
+            'expire' => 60,
+        ],
+
+        'whusers' => [
+            'provider' => 'whusers',
             'table' => 'password_resets',
             'expire' => 60,
         ],
