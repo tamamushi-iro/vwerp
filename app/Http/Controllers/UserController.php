@@ -25,7 +25,7 @@ class UserController extends Controller {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'email' => 'required|email|unique:users',
-            'phone' => 'required|unique:users|regex:/^[0-9]{10}$/',
+            'phone' => 'required|unique:users',
             'password' => 'required|string|confirmed|min:6'
         ]);
 
@@ -76,12 +76,12 @@ class UserController extends Controller {
                 ], 401);
             } else {
                 $user = auth()->user();
-                $data = $user;
+                $data = ['id' => $user->id, 'name' => $user->name, 'email' => $user->email];
                 $data['session_token'] = $token;
                 return response()->json([
                     'code' => 200,
                     'status' => true,
-                    'data' => $user,
+                    'data' => $data,
                     'message' => "User logged in successfully"
                 ]);
             }
