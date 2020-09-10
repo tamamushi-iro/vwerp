@@ -42,7 +42,7 @@ class UserController extends Controller {
                 'id' => $user['id'],
                 'name' => $user['name'],
                 'email' => $user['email'],
-                'phone' => $input['phone']
+                'phone' => $user['phone']
             ];
             return response()->json([
                 'code' => 200,
@@ -75,8 +75,9 @@ class UserController extends Controller {
                     'message' => 'Invalid Credentials. User Unauthorized.'
                 ], 401);
             } else {
-                $user = auth()->user();
-                $data = ['id' => $user->id, 'name' => $user->name, 'email' => $user->email];
+                $data = auth()->user();
+                unset($data['created_at']);
+                unset($data['updated_at']);
                 $data['session_token'] = $token;
                 return response()->json([
                     'code' => 200,
@@ -122,7 +123,7 @@ class UserController extends Controller {
         return response()->json(auth()->user());
     }
 
-    // REGISTRATIONS CLOSED
+    // REGISTRATIONS CLOSED - NOT USED.
     public function registrationsClosed(Request $request) {
         return response()->json([
             'code' => 403,
