@@ -38,6 +38,17 @@ Route::group(['middleware' => 'api', 'prefix' => 'user'], function ($router) {
     Route::delete('delete/{user}', 'UserController@destroy');
 });
 
+Route::group(['middleware' => 'api', 'prefix' => 'whuser'], function ($router) {
+    Route::post('register', 'WarehouseUserController@register');
+    // Route::post('register', 'WarehouseUserController@registrationsClosed');
+    Route::post('login', 'WarehouseUserController@login');
+    Route::get('logout', 'WarehouseUserController@logout');
+    Route::get('refresh', 'WarehouseUserController@refresh');
+    Route::get('profile', 'WarehouseUserController@profile');
+    Route::get('index', 'WarehouseUserController@index');
+    Route::delete('delete/{whuser}', 'WarehouseUserController@destroy');
+});
+
 Route::group(['middleware' => 'api'], function ($router) {
     Route::apiResource('items', 'ItemController')->except(['update']);
     Route::post('items/update/{item}', 'ItemController@update');
@@ -47,7 +58,8 @@ Route::group(['middleware' => 'api'], function ($router) {
 });
 
 Route::group(['middleware' => 'api'], function ($router) {
-    Route::apiResource('events', 'EventController')->except(['update']);
+    Route::get('eventsInRange', 'EventController@indexRange');
+    Route::apiResource('events', 'EventController')->except(['update', 'indexRange']);
     Route::post('events/update/{event}', 'EventController@update');
     Route::apiResource('events/{event}/items', 'EventItemController')->only(['index']);
 });

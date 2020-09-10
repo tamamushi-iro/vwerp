@@ -16,8 +16,12 @@ class EventController extends Controller
 {
 
     public function __construct() {
-        $this->middleware('auth:api,admins');
-        // $this->middleware('auth:admins');
+        $this->middleware('auth:api,admins', [
+            'except' => ['indexRange']
+        ]);
+        $this->middleware('auth:whusers', [
+            'only' => ['indexRange']
+        ]);
     }
 
     /**
@@ -31,6 +35,15 @@ class EventController extends Controller
         } else {
             $eventResource = EventResource::collection(Event::where('has_ended', false)->get());
         }
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'data' => $eventResource
+        ]);
+    }
+
+    public function indexRange() {
+        $eventResource = EventResource::collection(Event::whereDate('start_date', '<=', Carbon::now()->add(1, 'month')->toDateString())->get());
         return response()->json([
             'code' => 200,
             'status' => true,
