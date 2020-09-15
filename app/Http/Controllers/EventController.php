@@ -12,15 +12,14 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class EventController extends Controller
-{
+class EventController extends Controller {
 
     public function __construct() {
         $this->middleware('auth:api,admins', [
-            'except' => ['indexRange']
+            'except' => ['show', 'update', 'indexRange']
         ]);
-        $this->middleware('auth:whusers', [
-            'only' => ['indexRange']
+        $this->middleware('auth:whusers,api,admins', [
+            'only' => ['show', 'update', 'indexRange']
         ]);
     }
 
@@ -32,6 +31,8 @@ class EventController extends Controller
     public function index(Request $request) {
         if(isset($request['show']) and $request['show'] == 'all') {
             $eventResource = EventResource::collection(Event::all());
+        } elseif(isset($request['show']) and $request['show'] == 'ended') {
+            $eventResource = EventResource::collection(Event::where('has_ended', true)->get());
         } else {
             $eventResource = EventResource::collection(Event::where('has_ended', false)->get());
         }
@@ -111,7 +112,7 @@ class EventController extends Controller
                         'code' => 400,
                         'status' => false,
                         'message' => "'serial_number' array and 'serial_quantity' array do not match in size"
-                    ]);
+                    ], 400);
                 }
                 $data = $this->addEventItems($request, $event['id']);
                 if(!$data['status']) {
@@ -156,7 +157,7 @@ class EventController extends Controller
                 'code' => 400,
                 'status' => false,
                 'message' => 'Event has already ended'
-            ]);
+            ], 400);
         }
         $validator = Validator::make($request->all(), [
             'serial_number' => 'array',
@@ -186,7 +187,7 @@ class EventController extends Controller
                 // FIRST WE "CLEAR OUT" EXISTING ITEMS BY CALLING clearEventItems. THEN ADD THEM BACK WITH NEW ITEMS BY CALLING addEventItems.
                 $this->clearEventItems($event['id']);
                 $data = $this->addEventItems($request, $event['id']);
-                if(!$data['status']) return response()->json($data);
+                if(!$data['status']) return response()->json($data, 400);
             }
             $event->update($request->all());
             return response()->json([
@@ -211,7 +212,7 @@ class EventController extends Controller
                 'code' => 400,
                 'status' => false,
                 'message' => 'Event has already ended'
-            ]);
+            ], 400);
         }
         // First "clear" all the event items.
         $this->clearEventItems($event['id'], $fromDestroy=true);

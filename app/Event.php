@@ -3,10 +3,10 @@
 namespace App;
 
 use App\EventItem;
+use App\EventItemsHistory;
 use Illuminate\Database\Eloquent\Model;
 
-class Event extends Model
-{
+class Event extends Model {
 
     protected $fillable = [
         'invoice_number',
@@ -34,6 +34,10 @@ class Event extends Model
 
     public function event_items() {
         return $this->hasMany(EventItem::class);
+    }
+
+    public function event_items_history() {
+        return $this->hasMany(EventItemsHistory::class);
     }
 
 }
