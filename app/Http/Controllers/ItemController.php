@@ -12,7 +12,12 @@ use Illuminate\Http\Request;
 
 class ItemController extends Controller {
     public function __construct() {
-        $this->middleware('auth:api,admins');
+        $this->middleware('auth:api,admins', [
+            'except' => ['index']
+        ]);
+        $this->middleware('auth:whusers,api,admins', [
+            'only' => ['index']
+        ]);
     }
 
     /**
