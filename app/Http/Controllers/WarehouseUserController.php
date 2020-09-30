@@ -16,7 +16,7 @@ class WarehouseUserController extends Controller
         $this->middleware('auth:whusers', [
             'except' => ['login', 'register', 'index', 'destroy']
         ]);
-        $this->middleware('auth:admins', [
+        $this->middleware('auth:api,admins', [
             'only' => ['register', 'index', 'destroy']
         ]);
     }

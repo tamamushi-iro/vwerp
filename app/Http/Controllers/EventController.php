@@ -247,6 +247,14 @@ class EventController extends Controller {
                 $item = Item::find($itemSerialBarcode->item_id);
                 $newItemQuant = $item->available_quantity - $quantity;
                 $newItemSerialQuant = $itemSerialBarcode->available_quantity - $quantity;
+                // TO HANDLE THE -ve $quantity
+                if($newItemQuant < $item->total_quantity or $newItemSerialQuant > $itemSerialBarcode->total_quantity) {
+                    return [
+                        'code' => 400,
+                        'status' => false,
+                        'message' => "Item: $item->name Serial: $itemSerialBarcode->serial_number not available in sufficient quantity. Available: ($item->available_quantity, $itemSerialBarcode->available_quantity)"
+                    ];
+                }
                 if($newItemQuant >= 0 and $newItemSerialQuant >= 0) {
                     $itemSerialBarcode->update([
                         'available_quantity' => $newItemSerialQuant,
