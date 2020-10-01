@@ -20,7 +20,7 @@ class EventResource extends JsonResource
         if(isset($request['show']) and $request['show'] == 'ended') {
             foreach($this->event_items_history as $event_item) {
                 $temp = [
-                    'id' => $event_item->item_serial_barcode->id,
+                    'serial_id' => $event_item->item_serial_barcode->id,
                     'item_id' => $event_item->item_serial_barcode->item_id,
                     'item_name' => $event_item->item_serial_barcode->item->name,
                     'serial_number' => $event_item->item_serial_barcode->serial_number,
@@ -31,7 +31,7 @@ class EventResource extends JsonResource
         } else {
             foreach($this->event_items as $event_item) {
                 $temp = [
-                    'id' => $event_item->item_serial_barcode->id,
+                    'serial_id' => $event_item->item_serial_barcode->id,
                     'item_id' => $event_item->item_serial_barcode->item_id,
                     'item_name' => $event_item->item_serial_barcode->item->name,
                     'serial_number' => $event_item->item_serial_barcode->serial_number,

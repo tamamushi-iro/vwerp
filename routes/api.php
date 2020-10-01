@@ -62,6 +62,7 @@ Route::group(['middleware' => 'api'], function ($router) {
     Route::apiResource('events', 'EventController')->except(['update', 'indexRange']);
     Route::post('events/update/{event}', 'EventController@update');
     Route::apiResource('events/{event}/items', 'EventItemController')->only(['index']);
+    Route::post('events/returnFromEvent/{event}', 'EventController@returnFromEvent');
 });
 
 Route::group(['middleware' => 'api'], function () {

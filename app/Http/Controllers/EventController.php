@@ -11,15 +11,16 @@ use Validator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class EventController extends Controller {
 
     public function __construct() {
         $this->middleware('auth:api,admins', [
-            'except' => ['show', 'update', 'indexRange']
+            'except' => ['show', 'update', 'indexRange', 'returnedFromEvent']
         ]);
         $this->middleware('auth:whusers,api,admins', [
-            'only' => ['show', 'update', 'indexRange']
+            'only' => ['show', 'update', 'indexRange', 'returnedFromEvent']
         ]);
     }
 
@@ -226,6 +227,25 @@ class EventController extends Controller {
         ]);
     }
 
+    // APP API TO CLEAR ITEMS FROM EVENT:
+    public function returnFromEvent(Request $request, Event $event) {
+        // Check for if event already ended
+        if($event->has_ended) {
+            return response()->json([
+                'code' => 400,
+                'status' => false,
+                'message' => 'Event has already ended'
+            ], 400);
+        }
+        // "clear/return" the event items received.
+        $data = $this->returnItems($request, $event['id']);
+        if(!$data['status']) return response()->json($data, 400);
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'message' => 'Item(s) returned from Event successfully'
+        ]);
+    }
 
     // HELPER FUNCTIONS:
 
@@ -248,7 +268,7 @@ class EventController extends Controller {
                 $newItemQuant = $item->available_quantity - $quantity;
                 $newItemSerialQuant = $itemSerialBarcode->available_quantity - $quantity;
                 // TO HANDLE THE -ve $quantity
-                if($newItemQuant < $item->total_quantity or $newItemSerialQuant > $itemSerialBarcode->total_quantity) {
+                if($newItemQuant > $item->total_quantity or $newItemSerialQuant > $itemSerialBarcode->total_quantity) {
                     return [
                         'code' => 400,
                         'status' => false,
@@ -315,6 +335,46 @@ class EventController extends Controller {
         //     'status' => true,
         //     'message' => 'Event Items cleared successfully',
         // ];
+    }
+
+    protected function returnItems(Request $request, $event_id) {
+        if(!isset($request['serial_id'])) return ['code' => '400', 'status' => false, 'message' => 'No serial_id sent'];
+        foreach($request['serial_id'] as $serial_id) {
+            try {
+                $eventItem = EventItem::where('item_serial_barcode_id', $serial_id)
+                    ->where('event_id', $event_id)
+                    ->firstOrFail();
+            } catch(ModelNotFoundException $e) {
+                return [
+                    'code' => 400,
+                    'status' => false,
+                    'message' => "A given serial_id: $serial_id not assigned to the event: $event_id",
+                ];
+            }
+            $itemSerialBarcode = ItemSerialBarcode::find($serial_id);
+            $item = Item::find($itemSerialBarcode->item_id);
+            if($item->available_quantity < $item->total_quantity and $itemSerialBarcode->available_quantity < $itemSerialBarcode->total_quantity) {
+                $itemSerialBarcode->update([
+                    'available_quantity' => $itemSerialBarcode->available_quantity + $eventItem->assigned_quantity,
+                    'is_available' => true
+                ]);
+                $item->update([
+                    'available_quantity' => $item->available_quantity + $eventItem->assigned_quantity
+                ]);
+            }
+            DB::table('event_items_history')->insert([
+                'event_id' => $eventItem->event_id,
+                'item_serial_barcode_id' => $eventItem->item_serial_barcode_id,
+                'assigned_quantity' => $eventItem->assigned_quantity,
+                'created_at' => Carbon::now()
+            ]);
+            $eventItem->delete();
+        }
+        return [
+            'code' => 200,
+            'status' => true,
+            'message' => 'Item(s) returned from Event successfully'
+        ];
     }
 
 }
