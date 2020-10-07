@@ -17,10 +17,10 @@ class EventController extends Controller {
 
     public function __construct() {
         $this->middleware('auth:api,admins', [
-            'except' => ['show', 'update', 'indexRange', 'returnedFromEvent']
+            'except' => ['show', 'update', 'indexRange', 'indexNotFinal', 'returnedFromEvent']
         ]);
         $this->middleware('auth:whusers,api,admins', [
-            'only' => ['show', 'update', 'indexRange', 'returnedFromEvent']
+            'only' => ['show', 'update', 'indexRange', 'indexNotFinal', 'returnedFromEvent']
         ]);
     }
 
@@ -45,11 +45,19 @@ class EventController extends Controller {
     }
 
     public function indexRange() {
-        $eventResource = EventResource::collection(Event::whereDate('start_date', '<=', Carbon::now()->add(1, 'month')->toDateString())->get());
+        $eventResource = EventResource::collection(Event::whereDate('start_date', '<=', Carbon::now()->add(15, 'days')->toDateString())->where('has_ended', false)->get());
         return response()->json([
             'code' => 200,
             'status' => true,
             'data' => $eventResource
+        ]);
+    }
+
+    public function indexNotFinal() {
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'data' => EventResource::collection(Event::where('is_final', false)->get())
         ]);
     }
 
@@ -227,7 +235,7 @@ class EventController extends Controller {
         ]);
     }
 
-    // APP API TO CLEAR ITEMS FROM EVENT:
+    // APP API TO CLEAR ITEMS FROM event_item_list:
     public function returnFromEvent(Request $request, Event $event) {
         // Check for if event already ended
         if($event->has_ended) {

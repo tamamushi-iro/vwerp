@@ -59,6 +59,7 @@ Route::group(['middleware' => 'api'], function ($router) {
 
 Route::group(['middleware' => 'api'], function ($router) {
     Route::get('eventsInRange', 'EventController@indexRange');
+    Route::get('eventsNotFinal', 'EventController@indexNotFinal');
     Route::apiResource('events', 'EventController')->except(['update', 'indexRange']);
     Route::post('events/update/{event}', 'EventController@update');
     Route::apiResource('events/{event}/items', 'EventItemController')->only(['index']);
