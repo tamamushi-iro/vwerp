@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Item extends Model
 {
     protected $fillable = [
-        'name', 'total_quantity', 'available_quantity', 'class', 'category', 'type'
+        'name', 'total_quantity', 'available_quantity', 'class', 'category', 'type', 'item_type_code'
     ];
 
     protected $hidden = [

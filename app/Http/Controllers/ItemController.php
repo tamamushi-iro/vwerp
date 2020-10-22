@@ -47,6 +47,7 @@ class ItemController extends Controller {
             'class' => 'required|integer',
             'category' => 'required|integer',
             'type' => 'required|integer',
+            'item_type_code' => 'required|integer',
             'serial_number' => 'required|array',
             'serial_number.*' => 'required|distinct|string|unique:item_serial_barcodes,serial_number',
             'serial_quantity' => 'required|array',

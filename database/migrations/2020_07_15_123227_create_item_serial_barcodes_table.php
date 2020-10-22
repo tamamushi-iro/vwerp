@@ -24,6 +24,7 @@ class CreateItemSerialBarcodesTable extends Migration
             $table->boolean('is_available')->default(true);
             $table->boolean('is_lost')->default(false);
             $table->integer('lost_quantity')->default(0);
+            $table->boolean('in_maintenance')->default(false);
             $table->text('notes')->nullable();
             $table->timestamps();
         });

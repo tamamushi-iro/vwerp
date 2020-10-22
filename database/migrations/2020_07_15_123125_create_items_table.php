@@ -22,6 +22,7 @@ class CreateItemsTable extends Migration
             $table->foreignID('class')->references('id')->on('tags')->constrained();
             $table->foreignID('category')->references('id')->on('tags')->constrained();
             $table->foreignID('type')->references('id')->on('tags')->constrained();
+            $table->integer('item_type_code')->default('0'); // 0 for default, 1 for cables (unused), 2 for LED Panels.
             // $table->string('class');
             // $table->string('category');
             // $table->string('type');

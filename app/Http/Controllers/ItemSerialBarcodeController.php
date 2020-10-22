@@ -85,7 +85,7 @@ class ItemSerialBarcodeController extends Controller {
     public function destroy(ItemSerialBarcode $serial) {
         try {
             $serial->delete();
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch(\Illuminate\Database\QueryException $e) {
             return response()->json([
                 'code' => 400,
                 'status' => false,
