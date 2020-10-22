@@ -3,6 +3,7 @@
 namespace App;
 
 use App\ItemSerialBarcode;
+use App\LedCabinet;
 use App\Tag;
 use Illuminate\Database\Eloquent\Model;
 
@@ -28,7 +29,11 @@ class Item extends Model
         return $this->hasOne(Tag::class, 'id', 'category');
     }
 
-    public function tagstype() {
+    public function tagsType() {
         return $this->hasOne(Tag::class, 'id', 'type');
+    }
+
+    public function ledCabinets() {
+        return $this->hasMany(LedCabinet::class);
     }
 }
