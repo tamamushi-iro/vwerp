@@ -102,7 +102,16 @@ class LedCabinetController extends Controller {
      * @param  \App\LedCabinet  $ledCabinet
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, LedCabinet $ledCabinet) {
+    // public function update(Request $request, LedCabinet $ledCabinet) {
+    //     $ledCabinet->update($request->all());
+    //     return response()->json([
+    //         'code' => 200,
+    //         'status' => true,
+    //         'message' => 'Led Cabinet Updated successfully'
+    //     ]);
+    // }
+    public function update(Request $request, $ledSerial) {
+        $ledCabinet = LedCabinet::where('serial_number', $ledSerial)->firstOrFail();
         $ledCabinet->update($request->all());
         return response()->json([
             'code' => 200,
