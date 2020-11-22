@@ -5,13 +5,36 @@ namespace App\Http\Controllers;
 use DNS2D;
 use App\LedCabinet;
 use App\Item;
+use App\Tag;
+use App\Http\Resources\LedCabinetResource;
 use Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
 
 class LedCabinetController extends Controller {
 
     public function __construct() {
         $this->middleware('auth:api,admins');
+    }
+
+    public function overview(Request $request) {
+        $array = Item::select(DB::raw('id, name as item_name, type as item_type'))->where('item_type_code', 2)
+                        ->withCount([
+                            'ledCabinets as ledCabinet_total_quantity',
+                            'ledCabinets as ledCabinet_available_quantity' => function (Builder $query) {
+                                $query->where('is_available', true);
+                            }
+                        ])
+                        ->get();
+        foreach($array as $a) {
+            $a['item_type'] = Tag::find($a['item_type'])['tag_name'];
+        }
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'data' => $array
+        ]);
     }
 
     /**
@@ -24,13 +47,13 @@ class LedCabinetController extends Controller {
             return response()->json([
                 'code' => 200,
                 'status' => true,
-                'data' => LedCabinet::where('in_maintenance', true)->get()
+                'data' => LedCabinetResource::collection(LedCabinet::where('in_maintenance', true)->get())
             ]);
         } else {
             return response()->json([
                 'code' => 200,
                 'status' => true,
-                'data' => LedCabinet::all()
+                'data' => LedCabinetResource::collection(LedCabinet::all())
             ]);
         }
     }

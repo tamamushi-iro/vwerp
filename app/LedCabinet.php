@@ -12,7 +12,7 @@ class LedCabinet extends Model
     ];
 
     protected $hidden = [
-        'created_at', 'updated_at'
+        'created_at'
     ];
 
     public function item() {

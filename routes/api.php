@@ -59,6 +59,7 @@ Route::group(['middleware' => 'api'], function ($router) {
     Route::get('ledCabinets', 'LedCabinetController@index');
     Route::post('ledCabinets/update/{ledSerial}', 'LedCabinetController@update');
     Route::delete('ledCabinets/{ledSerial}', 'LedCabinetController@destroy');
+    Route::get('ledCabinets/overview', 'LedCabinetController@overview');
 });
 
 Route::group(['middleware' => 'api'], function ($router) {
