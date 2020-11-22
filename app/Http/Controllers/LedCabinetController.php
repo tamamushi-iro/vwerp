@@ -19,27 +19,19 @@ class LedCabinetController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request, Item $item) {
-        if($item->item_type_code == 2) {
-            if(isset($request['show']) and $request['show'] == 'in_maintenance') {
-                return response()->json([
-                    'code' => 200,
-                    'status' => true,
-                    'data' => $item->ledCabinets->where('in_maintenance', true)
-                ]);
-            } else {
-                return response()->json([
-                    'code' => 200,
-                    'status' => true,
-                    'data' => $item->ledCabinets
-                ]);
-            }
+    public function index(Request $request) {
+        if(isset($request['show']) and $request['show'] == 'in_maintenance') {
+            return response()->json([
+                'code' => 200,
+                'status' => true,
+                'data' => LedCabinet::where('in_maintenance', true)->get()
+            ]);
         } else {
             return response()->json([
-                'code' => 400,
-                'status' => false,
-                'message' => "Item of item_type_code: $item->item_type_code, expected item_type_code: 2"
-            ], 400);
+                'code' => 200,
+                'status' => true,
+                'data' => LedCabinet::all()
+            ]);
         }
     }
 
@@ -102,14 +94,6 @@ class LedCabinetController extends Controller {
      * @param  \App\LedCabinet  $ledCabinet
      * @return \Illuminate\Http\Response
      */
-    // public function update(Request $request, LedCabinet $ledCabinet) {
-    //     $ledCabinet->update($request->all());
-    //     return response()->json([
-    //         'code' => 200,
-    //         'status' => true,
-    //         'message' => 'Led Cabinet Updated successfully'
-    //     ]);
-    // }
     public function update(Request $request, $ledSerial) {
         $ledCabinet = LedCabinet::where('serial_number', $ledSerial)->firstOrFail();
         $ledCabinet->update($request->all());
@@ -126,7 +110,8 @@ class LedCabinetController extends Controller {
      * @param  \App\LedCabinet  $ledCabinet
      * @return \Illuminate\Http\Response
      */
-    public function destroy(LedCabinet $ledCabinet) {
+    public function destroy($ledSerial) {
+        $ledCabinet = LedCabinet::where('serial_number', $ledSerial)->firstOrFail();
         try {
             $ledCabinet->delete();
         } catch(\Illuminate\Database\QueryException $e) {

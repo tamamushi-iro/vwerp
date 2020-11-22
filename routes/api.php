@@ -55,9 +55,10 @@ Route::group(['middleware' => 'api'], function ($router) {
     Route::apiResource('serials', 'ItemSerialBarcodeController')->only(['show', 'destroy']);
     Route::post('serials/update/{serial}', 'ItemSerialBarcodeController@update');
     Route::apiResource('items/{item}/serials', 'ItemSerialBarcodeController')->only(['index']);
-    Route::apiResource('ledCabinets', 'LedCabinetController')->only(['destroy']);
+    Route::post('items/{item}/ledCabinets', 'LedCabinetController@store');
+    Route::get('ledCabinets', 'LedCabinetController@index');
     Route::post('ledCabinets/update/{ledSerial}', 'LedCabinetController@update');
-    Route::apiResource('items/{item}/ledCabinets', 'LedCabinetController')->only(['index', 'store']);
+    Route::delete('ledCabinets/{ledSerial}', 'LedCabinetController@delete');
 });
 
 Route::group(['middleware' => 'api'], function ($router) {
