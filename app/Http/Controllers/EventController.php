@@ -17,10 +17,10 @@ class EventController extends Controller {
 
     public function __construct() {
         $this->middleware('auth:api,admins', [
-            'except' => ['show', 'update', 'indexRange', 'indexNotFinal', 'returnedFromEvent']
+            'except' => ['show', 'update', 'indexRange', 'indexNotFinal', 'returnFromEvent']
         ]);
         $this->middleware('auth:whusers,api,admins', [
-            'only' => ['show', 'update', 'indexRange', 'indexNotFinal', 'returnedFromEvent']
+            'only' => ['show', 'update', 'indexRange', 'indexNotFinal', 'returnFromEvent']
         ]);
     }
 
