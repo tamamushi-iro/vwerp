@@ -73,7 +73,7 @@ class WarehouseUserController extends Controller
                 return response()->json([
                     'code' => 401,
                     'status' => false,
-                    'message' => 'Invalid Credentials. Admin Unauthorized.'
+                    'message' => 'Invalid Credentials. Whuser Unauthorized.'
                 ], 401);
             } else {
                 $data = Auth::guard('whusers')->user();
