@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'store_path' => public_path("/qrcodeStorage/"),
+    'store_path' => public_path("../../../public_html/vwerp/public/qrcodeStorage/"),
 ];
