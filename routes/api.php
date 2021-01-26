@@ -69,6 +69,7 @@ Route::group(['middleware' => 'api'], function ($router) {
     Route::post('events/update/{event}', 'EventController@update');
     Route::apiResource('events/{event}/items', 'EventItemController')->only(['index']);
     Route::post('events/returnFromEvent/{event}', 'EventController@returnFromEvent');
+    Route::post('events/{event}/sendClientEmail', 'EmailController@sendClientEventEmail');
 });
 
 Route::group(['middleware' => 'api'], function () {
