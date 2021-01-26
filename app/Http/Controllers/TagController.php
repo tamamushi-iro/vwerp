@@ -23,13 +23,13 @@ class TagController extends Controller
                 'code' => 200,
                 'status' => true,
                 'data' => [
-                    'class' => Tag::select('id', 'tag_name')->where('tag_type', 'class')->get(),
-                    'category' => Tag::select('id', 'tag_name')->where('tag_type', 'category')->get(),
-                    'type' => Tag::select('id', 'tag_name')->where('tag_type', 'type')->get()
+                    'class' => Tag::select('id', 'tag_name')->where('tag_type', 'class')->orderBy('tag_name', 'asc')->get(),
+                    'category' => Tag::select('id', 'tag_name')->where('tag_type', 'category')->orderBy('tag_name', 'asc')->get(),
+                    'type' => Tag::select('id', 'tag_name')->where('tag_type', 'type')->orderBy('tag_name', 'asc')->get()
                 ]
             ]);
         }
-        $tagCollection = Tag::all();
+        $tagCollection = Tag::all()->sortBy('tag_name');
         return response()->json([
             'code' => 200,
             'status' => true,
