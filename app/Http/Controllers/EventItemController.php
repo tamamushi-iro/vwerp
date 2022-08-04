@@ -55,11 +55,7 @@ class EventItemController extends Controller
     {
         // Unused in front end. Comment added for fake commit?
         $array['items'] = array();
-        return response()->json([
-            'code' => 500,
-            'status' => true,
-            'data' => $array[0]
-        ]);
+        return None;
     }
 
     /**
