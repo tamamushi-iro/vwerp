@@ -50,6 +50,17 @@ class EventItemController extends Controller
             'data' => $array[0]
         ]);
     }
+    
+    public function maximumFunction(Event $event)
+    {
+        // Unused in front end. Comment added for fake commit?
+        $array['items'] = array();
+        return response()->json([
+            'code' => 200,
+            'status' => true,
+            'data' => $array[0]
+        ]);
+    }
 
     /**
      * Store a newly created resource in storage.
